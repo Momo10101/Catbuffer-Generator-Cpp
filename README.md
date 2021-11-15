@@ -24,7 +24,7 @@ To generate the library file, do the following:
 1. Clone the ``catbuffer-generators`` repository:
 
 ```bash
-git clone https://github.com/symbol/catbuffer-generators
+git clone https://github.com/Momo10101/Catbuffer-Generator-Cpp
 ```
 
 2. Generated the .cpp/.h files:
