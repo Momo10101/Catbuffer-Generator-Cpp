@@ -174,17 +174,28 @@ enum class NetworkType : uint8_t
 
 Structs are the most elaborate custom defined types in Catbuffer and can contain multiple fields including other structs. A struct has to define at least three keys: 'name', 'type' and 'layout'. An optional 'comment' key can also be added. The 'type' key has to be set to 'struct' and 'layout' defines the fields in the struct. An example of a 'struct' was shown [here](#yaml_input_file_format). There are in total 9 field types that can appear inside 'layout'. They are listed below:
 
-**builtin type**
-**custom type**
+*builtin type*
 
-**condition**
-**reserved**
-**const**
-**inline**
+*custom type*
 
-**array**
-**array sized**
-**array fill**
+
+
+*condition*
+
+*reserved*
+
+*const*
+
+*inline*
+
+
+
+*array*
+
+*array sized*
+
+*array fill*
+
 
 The subsections below will explain the above field types in more detail.
 
