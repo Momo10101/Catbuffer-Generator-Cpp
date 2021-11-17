@@ -41,7 +41,8 @@ class CppClassDeclarationGenerator():
                 
         self.group_type                          = ""                 # The enum group that the class belongs to (if any)
         self.group_id                            = ""                 # The id of the class, within the above group
-                
+        self.group_version                       = ""                 # The version of the group
+
         self.conditions : typing.Dict[str, list] = {}                 # Stores a list of condition fields
 
         self.__name_to_enum                      = types.name_to_enum # Dict of all enums
@@ -133,6 +134,8 @@ class CppClassDeclarationGenerator():
                     if "TRANSACTION_TYPE" == field["name"]:
                         self.group_type = type
                         self.group_id   = field["value"]
+                    elif "TRANSACTION_VERSION" == field["name"]:
+                        self.group_version = field["value"]
 
                     self.__header_code_output += CppFieldGenerator.gen_const_field( type, name, field["value"], comments )
 

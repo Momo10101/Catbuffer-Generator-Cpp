@@ -41,7 +41,7 @@ int main( int argc, char* argv[] )
 
     // Deserialize all of payload
     printf("Test vector %lu | type %d | ", i, (int) transaction.mType);
-    std::unique_ptr<ICatbuffer> cat = create_type_TransactionType( transaction.mType );
+    std::unique_ptr<ICatbuffer> cat = create_type_TransactionType( transaction.mType, transaction.mEntityBody.mVersion );
     cat->Deserialize( inputBuf );
 
 

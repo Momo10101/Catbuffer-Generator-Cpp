@@ -6,6 +6,31 @@ A simple C++ code generator for serializing and deserializing Catbuffer schemas.
 ![img](https://pbs.twimg.com/media/B8AZgE-CUAAIB4a.jpg)
 
 
+<!-- toc -->
+* [Overview](#overview)
+  * [Instructions](#instructions)
+  * [Repository Structure](#repository-structure)
+* [YAML Input File Format](#yaml-input-file-format)
+  * [Builtin Data Types](#builtin-data-types)
+  * [Custom Data Types](#custom-data-types)
+  * [Defining Enumeration](#defining-enumeration)
+  * [Defining Structs](#defining-structs)
+    * [Builtin Type Field](#builtin-type-field)
+    * [Custom Type Field](#custom-type-field)
+    * [Condition Field](#condition-field)
+    * [Reserved Field](#reserved-field)
+    * [Inline Field](#inline-field)
+    * [Const Field](#const-field)
+    * [Array Field](#array-field)
+    * [Array Sized Field](#array-sized-field)
+    * [Array Fill Field](#array-fill-field)
+* [Generator code](#generator-code)
+* [C++ generated files](#c-generated-files)
+  * [ICatBuffer interface](#icatbuffer-interface)
+  * [RawBuffer](#rawbuffer)
+<!-- tocstop -->
+
+
 # Overview
 ----------
 Catbuffer is a very simple and memory efficient data serialization format. No extra information or padding is read or written, apart from what is defined by the user.
@@ -61,7 +86,6 @@ You should now see a file called **libcatbuffer.a** which you can link to you pr
 
 
 ## Repository Structure
-------------------------
 
 * **[`generator`](generator/)**: The python source code for parsing an input YAML file and outputting C++ code.
 * **[`cpp_source`](cpp_source/)**: Static C++ source code needed for serialization/deserialization, which is independent of an input YAML file.
@@ -72,7 +96,8 @@ You should now see a file called **libcatbuffer.a** which you can link to you pr
 * **[`end_to_end_test`](end_to_end_test/)**: Contains end to end tests where serialized inputs are deserialized and then serialized again to check that the output is equal to the input. The test takes the yaml inputs in the 'yaml_test_inputs' folder, generates C++ outputs, takes the test vectors in 'test_vectors', uses the generated code to deserialize input vectors and then serializes again to compare the result with the initial input vectors.
 
 
-[//]: # (TODO: add a testing subsection here)
+[//]: # (TODO: add a testing subsection here) (add automatic fuzzer test and valgrind check)
+
 
 # YAML Input File Format
 -------------------------
@@ -106,7 +131,7 @@ The above markup defines a structure called **Coordinate** with 3 fields called 
 Catbuffer supports the following builtin datatypes: 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'
 
 
-##  Custom Data Types
+## Custom Data Types
 
 Apart from the builtin types, custom types can be defined like so:
 
@@ -172,7 +197,7 @@ enum class NetworkType : uint8_t
 
 ## Defining Structs
 
-Structs are the most elaborate custom defined types in Catbuffer and can contain multiple fields including other structs. A struct has to define at least three keys: 'name', 'type' and 'layout'. An optional 'comment' key can also be added. The 'type' key has to be set to 'struct' and 'layout' defines the fields in the struct. An example of a 'struct' was shown [here](#yaml_input_file_format). There are in total 9 field types that can appear inside 'layout'. They are listed below:
+Structs are the most elaborate custom defined types in Catbuffer and can contain multiple fields including other structs. A struct has to define at least three keys: 'name', 'type' and 'layout'. An optional 'comment' key can also be added. The 'type' key has to be set to 'struct' and 'layout' defines the fields in the struct. An example of a 'struct' was shown [here](#yaml-input-file-format). There are in total 9 field types that can appear inside 'layout'. They are listed below:
 
 *builtin type*
 
@@ -215,7 +240,7 @@ Builtin types are the simplest types supported in Catbuffer:
 
 ### Custom Type Field
 
-Some custom types such as **NetworkType**, **FeeMultiplier**, **Coordinate** were defined [here](#defining_enumeration), [here](#custom_data_types) and [here](#yaml_input_file_format). Below they are shown as fields in a struct:
+Some custom types such as **NetworkType**, **FeeMultiplier**, **Coordinate** were defined [here](#defining-enumeration), [here](#custom-data-types) and [here](#yaml-input-file-format). Below they are shown as fields in a struct:
 
 ```yaml
 - name: network
@@ -252,7 +277,7 @@ The name of the field is 'msg' and is of custom type 'Message'. It is only seria
 
 ### Reserved Field
 
-Reserved fields are useful for when a field is reserved for future use and should have a specific value that can not be set by the user. It is also useful for adding padding. Reserved fields are defined like [builtin](#builtin_type_field) fields but also need to add a **value** key and a **disposition** key with the value **reserved**. Below is an example of how to define a reserved field for padding:
+Reserved fields are useful for when a field is reserved for future use and should have a specific value that can not be set by the user. It is also useful for adding padding. Reserved fields are defined like [builtin](#builtin-type-field) fields but also need to add a **value** key and a **disposition** key with the value **reserved**. Below is an example of how to define a reserved field for padding:
 
 ```yaml
   - name: padding
@@ -263,6 +288,7 @@ Reserved fields are useful for when a field is reserved for future use and shoul
 ```
 
 Note that when serializing/deserializing, if the value read for a reserved field does not equal the **value** key, it is considered an error and the serialization/deserialization will fail.
+
 
 TODO: Value check is still to be implemented. Some questions: should reserved fields always have a value? Should reserved fields appear as class members?
 
@@ -296,6 +322,7 @@ Which would generate a C++ class member similar to this:
 const uint8_t VERSION = 14;
 ```
 
+
 (TODO: just do "type: const unit8" and get rid of disposition)
 
 
@@ -312,7 +339,10 @@ An array field is just a normal fixed size array with elements of a fixed size.
 
 Note that **amount_size** has to be a field in the same struct which appears before the array field. Furthermore, note that **type** can also be a user defined type, but the size of each array element must be the same for all elements, which means that they can not contain arrays of different sizes for example (TODO: ask the core devs about this)
 
+
 (TODO: missing check)
+
+
 (TODO: no need for disposition, just do "type: array uint64")
 
 
@@ -339,11 +369,29 @@ Given an array sized field, Catbuffer will automagically know how to serialize a
     disposition: const
 ```
 
-**MOSAIC_DEFINITION** in this case is an enumerator in the **TransactionType** enum, which also has to be the type of the **elem_type** field mentioned above.
+**MOSAIC_DEFINITION** in this case is an enumerator in the **TransactionType** enum, which also has to be the type of the **elem_type** field mentioned above. Besides the **TRANSACTION_TYPE** constant a **TRANSACTION_VERSION** constant also has to be defined like so:
+
+```yaml
+    name: TRANSACTION_VERSION
+    type: uint8
+    value: 3
+    disposition: const
+```
+
+In this way Catbuffer can support evolving structures over time.
 
 
-( TODO: const should not be used for this. )
+
+( TODO: const should not be used for assigning types and versions )
+
+( TODO: what should happen if a version and type combination does not exist? )
+
+( TODO: the type and version of a struct is hardcoded to EntityBody.type/version. We should generalize that! )
+
+
 ( TODO: We need to think about this a bit more. What if there are two fields of type EmbeddedTransaction? What if its not inline? )
+
+
 ( TODO: change "disposition" key to "type" )
 
 
@@ -360,13 +408,18 @@ An 'array fill' is a normal array with fixed sized elements, but where the numbe
 
 Note that an 'array fill' field has to be the last field in the outermost struct, otherwise it is an error.
 
+
 (TODO: remove size field since it is not needed)
+
+
 (TODO: implement check)
+
+
 (TODO: Explain why the need for array fill. Is it because we can save a size field?)
 
 
 # Generator code
-
+----------------
 The generator code, defined in the **generator/** folder, contains multiple classes to convert YAML inputs to C++ code. There are two types of classes, the ones that generate C++ declaration code which goes into .h files and definition code which goes into .cpp files. Below is a quick overview of the main classes:
 
 
@@ -379,8 +432,8 @@ The generator code, defined in the **generator/** folder, contains multiple clas
 
 |Definition Classes            | Description                                                                                     |
 |------------------------------|-------------------------------------------------------------------------------------------------|
-|CppSerializationGenerator     | Takes a field generated in YAML and generates C++ code to serialize it into a raw byte buffer   |
-|CppDeserializationGenerator   | Takes a field generated in YAML and generates C++ code to deserialize it from a raw byte buffer |
+|CppSerializationGenerator     | Takes a field defined in YAML and generates C++ code to serialize it into a raw byte buffer.    |
+|CppDeserializationGenerator   | Takes a field defined in YAML and generates C++ code to deserialize it from a raw byte buffer.  |
 |CppClassDefinitionGenerator   | Generates C++ class definitions which go into **.cpp** files.                                   |
 |CppEnumeratorToClassGenerator | Generates C++ functions to convert from enums to class instances.                               |
 
@@ -389,8 +442,7 @@ All of the above classes are documented in more detail in the source code.
 
 # C++ generated files
 ---------------------
-
-When done parsing a YAML input file three different C++ files are generated. First **types.h** files are generated, which contain all simple custom types and enums. Then for each defined struct type, C++ class files are generated in **.cpp/.h**, which contain the defined fields as class members and implement the ICatbuffer interface. The ICatbuffer interface is explained below. Lastly the files converters.h/converters.cpp contain the functions necessary to convert an enumerator to an instance of a struct as explained [here](#array_sized_field).
+When done parsing a YAML input file, three different C++ files are generated. First a **types.h** file is generated, which contains all simple custom types and enums. Then for each defined struct type, C++ class files are generated in **.cpp/.h**, which contain the defined fields as class members and implement the ICatbuffer interface which enable serialization/deserialization. The ICatbuffer interface is explained below. Lastly the files **converters.h/.cpp** contain the functions necessary to convert an enumerator to an instance of a struct (represented as an ICatbuffer pointer) as explained [here](#array-sized-field).
 
 
 ## ICatBuffer interface

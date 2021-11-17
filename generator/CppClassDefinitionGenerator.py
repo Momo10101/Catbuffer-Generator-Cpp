@@ -96,10 +96,12 @@ class CppClassDefinitionGenerator():
 
             if "disposition" in field:
 
-                if "const" == field["disposition"]:
+                disposition = field["disposition"]
+
+                if "const" == disposition:
                     continue # const fields dont need serialization/deserialization
                 
-                elif "array" == field["disposition"]:
+                elif "array" == disposition:
                     deserialization_body    += self.__deserializer.array_field( var_type, name, size )
                     serialization_body      += self.__serializer.array_field( var_type, name, size )
                     self.__size_code_output += self.__size_generator.array_field( var_type, name, size )
@@ -109,19 +111,19 @@ class CppClassDefinitionGenerator():
                     else:
                         add_succ_var = True
 
-                elif "inline" == field["disposition"]:
+                elif "inline" == disposition:
                     deserialization_body    += self.__deserializer.inline_field( name )
                     serialization_body      += self.__serializer.inline_field( name )
                     self.__size_code_output += self.__size_generator.inline_field( name )
                     add_succ_var = True
 
-                elif "reserved" == field["disposition"]:
+                elif "reserved" == disposition:
                     deserialization_body    += self.__deserializer.reserved_field( var_type, name )
                     serialization_body      += self.__serializer.reserved_field( var_type, name )
                     self.__size_code_output += self.__size_generator.reserved_field( var_type, name )
                     add_ptr_var = True
 
-                elif "array sized" == field["disposition"]:
+                elif "array sized" == disposition:
                     header_type       = field["header"]
                     header_type_field = field["header_type_field"]
                     enum_type         = self.__get_var_type( header_type_field, header_type )
@@ -133,11 +135,14 @@ class CppClassDefinitionGenerator():
                     self.__includes.add(f'#include "converters.h"')
                     add_succ_var = True
 
-                elif "array fill" == field["disposition"]: #TODO: check that only added once and at the end!!
+                elif "array fill" == disposition: #TODO: check that only added once and at the end!!
                     deserialization_body    += self.__deserializer.array_fill_field( var_type, name )
                     serialization_body      += self.__serializer.array_fill_field( var_type, name )
                     self.__size_code_output += self.__size_generator.array_fill_field( var_type, name )
                     add_succ_var = True
+                else:
+                    print(f'Unknown disposition: { disposition }\n')
+                    exit(1)
             else:
 
                 if var_type in self.__types.name_to_type or var_type in self.__types.name_to_enum or var_type in CppFieldGenerator.builtin_types:
@@ -278,23 +283,23 @@ class CppDeserializationGenerator():
         return self.normal_field(var_type, name)
 
 
-    def array_sized_field( self, array_name: str, array_size: str, 
+    def array_sized_field( self, array_name:  str, array_size:        str, 
                                  header_type: str, header_type_field: str, 
-                                 enum_type: str ):
+                                 enum_type:   str ):
 
         array_name        = CppFieldGenerator.convert_to_field_name( array_name )
         array_size        = CppFieldGenerator.convert_to_field_name( array_size )
         header_type_field = CppFieldGenerator.convert_to_field_name( header_type_field )
 
         output  = f'\tfor( size_t read_size = 0; read_size < {array_size}; )\n\t{{\n'
-        output += "\t\t// Deserializ header\n"
+        output += "\t\t// Deserialize header\n"
         output += f'\t\t{ header_type } header;\n'
         output += f'\t\tRawBuffer tmp = buffer;\n'
         output += f'\t\tsucc = header.Deserialize(tmp); if(!succ){{ return false; }}\n\n'
 
         output += "\t\t// Get element type and create type\n"
         output += f'\t\t{ enum_type } type = header.{ header_type_field };\n'
-        output += f'\t\tstd::unique_ptr<ICatbuffer> catbuf = create_type_{ enum_type }( type );\n\n'
+        output += f'\t\tstd::unique_ptr<ICatbuffer> catbuf = create_type_{ enum_type }( type, header.mEntityBody.mVersion );\n\n'
 
         output += "\t\t// Deserialize element and save it\n"
         output += f'\t\tconst size_t rsize = buffer.RemainingSize();\n'

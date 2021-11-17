@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(catbuffer)
 set (CMAKE_CXX_STANDARD 11)
 
-set (CMAKE_CXX_FLAGS "-Wall -Werror -Wextra -Winit-self -Woverloaded-virtual -Wuninitialized -Wmissing-declarations -Winit-self -ansi -pedantic -pedantic-errors ")
+set (CMAKE_CXX_FLAGS "-Wall -Werror -Wextra -Winit-self -Woverloaded-virtual -Wuninitialized -Winit-self -ansi -pedantic -pedantic-errors ")
 
 include_directories(${PROJECT_SOURCE_DIR}/static_src)
 
