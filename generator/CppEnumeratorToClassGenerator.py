@@ -116,9 +116,9 @@ class CppEnumeratorToClassGenerator():
                     self.__includes.add(f'#include "{class_name}.h"')
                     self.__definition_code_output += f'\t\tcase {enum_class}::{enum_type} : {{ return std::unique_ptr<ICatbuffer>( new {class_name}() ); }}\n'
 
-                self.__definition_code_output += f'\n\t\tdefault: {{ printf("Error: Unknown {enum_class} type 0x%X\\n", (uint32_t) type); exit(1); }}\n\t}}\n}}\n\n'
+                self.__definition_code_output += f'\n\t\tdefault: {{ return nullptr; }}\n\t}}\n}}\n\n'
 
-            version_to_function_code += f'\n\t\tdefault: {{ printf("Error: Unknown {enum_class} type 0x%X with version: %lu\\n", (uint32_t) type, version); exit(1); }}\n\t}}\n}}\n\n'
+            version_to_function_code += f'\n\t\tdefault: {{ return nullptr; }}\n\t}}\n}}\n\n'
             self.__definition_code_output += version_to_function_code
 
 
@@ -129,7 +129,14 @@ class CppEnumeratorToClassGenerator():
             if not version_to_types:
                 continue
 
-            self.__declaration_code_output += f'std::unique_ptr<ICatbuffer> create_type_{enum_class}( {enum_class} type, size_t version );\n'
+            self.__declaration_code_output += f'/**\n'
+            self.__declaration_code_output += f' * Function to create an instance of a class belonging to the class group {enum_class}.\n'
+            self.__declaration_code_output += f' * \n'
+            self.__declaration_code_output += f" * @param[in] type     The class with enum-type 'type', which should be instantiated.\n"
+            self.__declaration_code_output += f" * @param[in] version  The the version of the class which should be instantiated.\n"
+            self.__declaration_code_output += f" * @return             nullptr if 'type' and 'version' does not correspond to a class, otherwise pointer to instantiated class.\n"
+            self.__declaration_code_output += f' */\n'
+            self.__declaration_code_output += f'std::unique_ptr<ICatbuffer> create_type_{enum_class}( {enum_class} type, size_t version );\n\n\n'
 
 
 

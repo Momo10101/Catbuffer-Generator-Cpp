@@ -156,7 +156,7 @@ class CppClassDefinitionGenerator():
                         condition  = self.__gen_condition_from_field(conditions[condition_name][0])
                         union_name = "" if len(conditions[condition_name]) == 1 else condition_name+"_union"
 
-                        deserialization_body    += self.__deserializer.condition( name, var_type, condition, union_name )
+                        deserialization_body    += self.__deserializer.condition_field( name, var_type, condition, union_name )
                         serialization_body      += self.__serializer.condition_field( name, var_type, condition, union_name )
                         self.__size_code_output += self.__size_generator.condition( name, var_type, condition, union_name )
 
@@ -299,7 +299,8 @@ class CppDeserializationGenerator():
 
         output += "\t\t// Get element type and create type\n"
         output += f'\t\t{ enum_type } type = header.{ header_type_field };\n'
-        output += f'\t\tstd::unique_ptr<ICatbuffer> catbuf = create_type_{ enum_type }( type, header.mEntityBody.mVersion );\n\n'
+        output += f'\t\tstd::unique_ptr<ICatbuffer> catbuf = create_type_{ enum_type }( type, header.mEntityBody.mVersion );\n'
+        output += f'\t\tif( nullptr == catbuf ){{ return false; }}\n\n'
 
         output += "\t\t// Deserialize element and save it\n"
         output += f'\t\tconst size_t rsize = buffer.RemainingSize();\n'
@@ -327,7 +328,7 @@ class CppDeserializationGenerator():
         return output
 
 
-    def condition( self, var_name: str, var_type: str, condition: str, union_name: str = "",  ):
+    def condition_field( self, var_name: str, var_type: str, condition: str, union_name: str = "",  ):
         output = ""
         name   = var_name
         if union_name:
@@ -352,7 +353,6 @@ class CppSerializationGenerator():
     array sized, condition, etc.
     """
 
-
     def __init__( self, types: CppTypesGenerator ) -> None:
         self.__name_to_enum = types.name_to_enum
         self.__name_to_type = types.name_to_type
@@ -372,7 +372,6 @@ class CppSerializationGenerator():
 
 
     def array_field( self, var_type: str, var_name: str, array_size_name: int) -> str:
-        #var_name = CppFieldGenerator.convert_to_field_name(var_name)
         size_var = CppFieldGenerator.convert_to_field_name(array_size_name) # name of field containing size of array
 
         output  = f'\n\tfor( size_t i=0; i<{size_var}; ++i )\n'

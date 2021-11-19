@@ -36,20 +36,42 @@ int main( int argc, char* argv[] )
     // Get header
     RawBuffer header = inputBuf;
     Transaction transaction;
-    transaction.Deserialize( header );
+    bool succ = transaction.Deserialize( header );
+
+    if(!succ)
+    {
+      printf("Error: Was not able to deserialize header!\n");
+      return 1;
+    }
 
 
     // Deserialize all of payload
     printf("Test vector %lu | type %d | ", i, (int) transaction.mType);
     std::unique_ptr<ICatbuffer> cat = create_type_TransactionType( transaction.mType, transaction.mEntityBody.mVersion );
-    cat->Deserialize( inputBuf );
+    if( nullptr == cat )
+    {
+      printf("Error: Combination of type=%u and version=%u do not correspond to any class!\n", (uint32_t)transaction.mType, transaction.mEntityBody.mVersion);
+      return 1;
+    }
+    succ = cat->Deserialize( inputBuf );
+
+    if(!succ)
+    {
+      printf("Error: Was not able to deserialize data!\n");
+      return 1;
+    }
 
 
     // Serialize
    	output.resize( input.size() );
     RawBuffer outputBuf( output.data(), output.size() );
-    cat->Serialize( outputBuf );
+    succ = cat->Serialize( outputBuf );
 
+    if(!succ)
+    {
+      printf("Error: Was not able to serialize data\n");
+      return 1;
+    }
 
 
     // compare results
@@ -67,13 +89,13 @@ int main( int argc, char* argv[] )
         }
       }
 
-      exit(1);
+      return 1;
     }
 
   }
 
   printf("\nAll tests passed!\n\n");
-
+  return 0;
 }
 
 

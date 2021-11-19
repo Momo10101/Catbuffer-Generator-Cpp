@@ -271,18 +271,3 @@ class CppFieldGenerator():
             output += f'\t}} {CppFieldGenerator.convert_to_field_name(name)}_union;\n\n'
 
         return output
-
-    @staticmethod
-    def gen_condition_field2( name: str, fields: dict ):
-        """
-        TODO: DOCUMENT!!!
-        """
-
-        output = f'\tunion\n\t{{\n'
-
-        for field in fields:
-            output += f'\t\t{field["type"]} {CppFieldGenerator.convert_to_field_name(field["name"])}; // {field["comments"]}\n'
-
-        output += f'\t}} {CppFieldGenerator.convert_to_field_name(name)}_union;\n\n'
-
-        return output
