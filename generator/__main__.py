@@ -1,3 +1,4 @@
+import typing
 import yaml
 import shutil
 from pathlib import Path
@@ -5,7 +6,8 @@ import sys
 from distutils.dir_util import copy_tree
 
 from .CppClassDefinitionGenerator import CppClassDefinitionGenerator
-from .CppClassDeclarationGenerator import CppClassDeclarationGenerator
+from .CppClassDeclarationGenerator import CppClassDeclarationGenerator 
+from .YamlFieldChecker import YamlFieldCheckResult
 from .CppTypesGenerator import CppTypesGenerator
 from .CppEnumeratorToClassGenerator import CppEnumeratorToClassGenerator
 
@@ -41,7 +43,7 @@ def main():
 
     # Create output folder
     output_folder = sys.argv[2]
-    print("Output folder:", output_folder)
+    print(f"Creating output folder:{output_folder}\n")
     Path( output_folder ).mkdir( parents=True, exist_ok=True )
 
     gen_output_folder = output_folder+"/generated_src"
@@ -57,51 +59,72 @@ def main():
 
 
     # Read YAML file
+    print(f"Reading YAML file: {input_file_name}\n")
     with open(input_file_name, 'r') as stream:
         data_loaded = yaml.safe_load(stream)
 
 
     # Generate enum types
+    print("Generating enum types:")
+    class_decls : typing.Dict[str, CppClassDeclarationGenerator] = {}
     types_generator = CppTypesGenerator()
     for elem in data_loaded:
         if 'enum' == elem['type']: 
             types_generator.add_enum_type( elem )
-
+            print("\t"+elem["name"])
+        elif 'struct' == elem['type']:
+            class_decls[elem['name']] = CppClassDeclarationGenerator()
 
     # Generate user defined types
+    print("\nGenerating user types:")
     for elem in data_loaded:
         if 'byte' == elem['type']:
             types_generator.add_user_type( elem )
+            print("\t"+elem["name"])
 
     types_generator.write_file(gen_output_folder+"/types.h")
 
 
     # Generate class declarations (*.h)
-    name_to_class = {}
+    print("\nGenerating class declarations:")
     for elem in data_loaded:
         if 'struct'== elem['type']:
 
             # Generate class declaration
-            class_name    = elem['name']
-            class_dec_gen = CppClassDeclarationGenerator(class_name, elem['layout'], types_generator)
+            class_name         = elem['name']
+            class_dec_gen      = class_decls[class_name]
+            result, result_str = class_dec_gen.init(class_name, elem['layout'], types_generator, class_decls)
+
+            if result != YamlFieldCheckResult.OK:
+                print(result_str)
+                exit(1)
+
             class_dec_gen.write_file( gen_output_folder+f'/{class_name}.h' )
 
-            name_to_class[elem['name']] = class_dec_gen
+            class_decls[elem['name']] = class_dec_gen
+            print("\t"+elem["name"])
 
+
+    for class_name, decl in class_decls.items():
+        decl.check_dependency()
 
     # Generate class definitions (*.cpp)
+    print("\nGenerating class definitions:")
     for elem in data_loaded:
         if 'struct' == elem['type']:
-            class_decl     = name_to_class[elem['name']]
-            class_impl_gen = CppClassDefinitionGenerator( class_decl, name_to_class, types_generator )
-            class_impl_gen.write_file( gen_output_folder+f'/{class_decl.class_name}.cpp' )
+            class_decl         = class_decls[elem['name']]
+            class_def_gen      = CppClassDefinitionGenerator()
+            class_def_gen.init( class_decl, class_decls, types_generator )
+
+            class_def_gen.write_file( gen_output_folder+f'/{class_decl.class_name}.cpp' )
+            print("\t"+elem["name"])
 
 
     # Generate enum to class converters
-    converter = CppEnumeratorToClassGenerator( name_to_class, types_generator )
+    converter = CppEnumeratorToClassGenerator( class_decls, types_generator )
     converter.write_file( gen_output_folder )
 
-    print("Done!")
+    print("\nDone!")
 
 
 

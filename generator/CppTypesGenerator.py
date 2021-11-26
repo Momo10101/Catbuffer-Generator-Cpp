@@ -14,8 +14,8 @@ class CppTypesGenerator():
     """
 
     def __init__( self ) -> None:
-        self.name_to_enum : typing.Dict[str, dict] = {}  # enum name to enum fields
-        self.name_to_type : typing.Dict[str, dict] = {}  # type name to type fields
+        self.name_to_enum : typing.Dict[str, set] = {}  # enum name to enum fields
+        self.name_to_type : typing.Dict[str, set] = {}  # type name to type fields
 
         self.enums_code_output = ""  # cpp generated enum code goes here
         self.types_code_output = ""  # cpp generated type code goes here
@@ -71,7 +71,8 @@ class CppTypesGenerator():
         if enum_name in self.name_to_enum:
             print(f"Error: Same enum name, '{enum_name}', defined multiple times!\n")
 
-        self.name_to_enum[enum_name] = enum
+        #TODO: do a check here!!
+        self.name_to_enum[enum_name] = set()
 
         if "comments" in enum:
             self.enums_code_output += f'/**\n * {enum["comments"]}\n */\n'
@@ -82,6 +83,7 @@ class CppTypesGenerator():
         for value in enum["values"]:
             self.enums_code_output += f'\t{value["name"]} = {value["value"]},' 
             self.enums_code_output += f'//< {value["comments"]}\n' if "comments" in value else "\n"
+            self.name_to_enum[enum_name].add(value["name"])
 
         self.enums_code_output += "};\n\n\n"
 

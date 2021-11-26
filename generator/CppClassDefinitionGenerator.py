@@ -17,10 +17,10 @@ class CppClassDefinitionGenerator():
     'write_file()'.
     """
 
-    def __init__( self, 
-                  class_decl:               CppClassDeclarationGenerator, 
-                  class_name_to_class_decl: typing.Dict[str, CppClassDeclarationGenerator],
-                  types:                    CppTypesGenerator ) -> None:
+    def init( self, 
+              class_decl:               CppClassDeclarationGenerator, 
+              class_name_to_class_decl: typing.Dict[str, CppClassDeclarationGenerator],
+              types:                    CppTypesGenerator ) -> None:
         """
         Parameters
         ----------

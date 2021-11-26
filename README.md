@@ -38,7 +38,41 @@ Catbuffer is the serialization mechanism originally developed for the Symbol blo
 
 **catbuffer-schema** --> **catbuffer-parser** --> .yaml file --> **catbuffer-generator** --> .cpp/.h files --> C++ lib file
 
-Note that it is possible to define data structures directly in YAML format instead of catbuffer schemas, however, using schemas is more human readable and less verbose to write.
+Note that it is possible to define data structures directly in YAML format instead of catbuffer schemas, however, using schemas is more human readable and less verbose to write. 
+
+Below is shown a simple Catbuffer schema:
+
+```c++
+struct Coordinate
+	x = uint32
+	y = uint32
+	z = uint32
+```
+
+The generated code will allow serialization and manipulation of the above data structure in C++ like so:
+
+```c++
+  // Read vector 'a' (deserialize from file)
+  RawBuffer dataA = read_file( "vector_a.raw" ); // read_file returns a raw byte buffer
+  Coordinate a;
+  a.Deserialize( dataA );  // 'Deserialize()' initializes 'Coordinate' members from a raw buffer
+
+  // Read vector 'b' (deserialize from file)
+  RawBuffer rawB = read_file( "vector_b.raw" );
+  Coordinate b;
+  b.Deserialize( dataB );
+
+  // Compute cross product (initialize 'Coordinate' Catbuffer 'c')
+  Coordinate c;
+  c.x = a.y*b.z − a.z*b.y; 
+  c.y = a.z*b.x − a.x*b.z;
+  c.z = a.x*b.y − a.y*b.x;
+
+  // Write vector 'c' (serialize to file)
+  RawBuffer dataC;
+  c.Serialize( dataC ); // 'Serialize()' writes 'Coordinate' members to a raw buffer
+  write_file( dataC, "vector_c.raw" );
+```
 
 
 ## Instructions
@@ -102,7 +136,7 @@ You should now see a file called **libcatbuffer.a** which you can link to you pr
 # YAML Input File Format
 -------------------------
 
-An example of a simple data structure defined in YAML is shown below:
+The generator accepts YAML files and outputs C++ files. An example of a simple data structure defined in YAML is shown below:
 
 ```yaml
 - name: Coordinate
@@ -130,6 +164,7 @@ The above markup defines a structure called **Coordinate** with 3 fields called 
 
 Catbuffer supports the following builtin datatypes: 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'
 
+TODO: we should add support for float and double as well
 
 ## Custom Data Types
 
@@ -273,7 +308,7 @@ Condition fields can be used to add optional fields. If a condition is met then 
 
 The name of the field is 'msg' and is of custom type 'Message'. It is only serialized/deserialized if **message_defined != 0**. Note that **message_defined** has to be a field in the same struct. The only condition operations supported at the moment are **equals** and **not equals**.
 
-
+#TODO: add support for other condition operators and perhaps change names to '=', '!=', '<=', '=>' etc.
 
 ### Reserved Field
 
@@ -345,6 +380,8 @@ Note that **amount_size** has to be a field in the same struct which appears bef
 
 (TODO: no need for disposition, just do "type: array uint64")
 
+
+(TODO: can size be int instead of variable?)
 
 ### Array Sized Field
 
@@ -423,11 +460,11 @@ Note that an 'array fill' field has to be the last field in the outermost struct
 The generator code, defined in the **generator/** folder, contains multiple classes to convert YAML inputs to C++ code. There are two types of classes, the ones that generate C++ declaration code which goes into .h files and definition code which goes into .cpp files. Below is a quick overview of the main classes:
 
 
-|Declaration Classes          | Description                                                                     | 
-|-----------------------------|---------------------------------------------------------------------------------|
-|CppClassMemberGenerator      | Takes fields defined in YAML and converts them to C++ class members.            |
-|CppClassDeclarationGenerator | Generates C++ class declarations which go into **.h** files.                    |
-|CppTypesGenerator            | Converts enums and custom types defined in YAML and outputs them in **types.h**.|
+|Declaration Classes           | Description                                                                                     | 
+|------------------------------|-------------------------------------------------------------------------------------------------|
+|CppClassMemberGenerator       | Takes fields defined in YAML and converts them to C++ class members.                            |
+|CppClassDeclarationGenerator  | Generates C++ class declarations which go into **.h** files.                                    |
+|CppTypesGenerator             | Converts enums and custom types defined in YAML and outputs them in **types.h**.                |
 
 
 |Definition Classes            | Description                                                                                     |
@@ -437,7 +474,13 @@ The generator code, defined in the **generator/** folder, contains multiple clas
 |CppClassDefinitionGenerator   | Generates C++ class definitions which go into **.cpp** files.                                   |
 |CppEnumeratorToClassGenerator | Generates C++ functions to convert from enums to class instances.                               |
 
-All of the above classes are documented in more detail in the source code.
+
+|Yaml Checker Classes          | Description                                                                                     |
+|------------------------------|-------------------------------------------------------------------------------------------------|
+|YamlFieldChecker              | Contains checks to ensure that the different fields contain the necessary YAML keys             |
+|YamlDependencyChecker         | Contains checks to ensure that the dependencies defined in the YAML fields are valid            |
+
+The above classes are documented in more detail in the source code.
 
 
 # C++ generated files

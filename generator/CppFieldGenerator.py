@@ -265,7 +265,12 @@ class CppFieldGenerator():
             output += f'\tunion\n\t{{\n'
 
         for field in fields:
-            output += f'\t\t{field["type"]} {CppFieldGenerator.convert_to_field_name(field["name"])}; // {field["comments"]}\n'
+            output += f'\t\t{field["type"]} {CppFieldGenerator.convert_to_field_name(field["name"])};'
+            
+            if "comments" in field:
+                output += f'// {field["comments"]}'
+                
+            output += '\n'
 
         if len(fields) > 1:
             output += f'\t}} {CppFieldGenerator.convert_to_field_name(name)}_union;\n\n'
