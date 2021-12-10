@@ -9,7 +9,6 @@ class TestYamlDependencyErrorDetection( unittest.TestCase ):
 
     # array_sized tests
     # /////////////////////////////////////////////////////////////////
-    # TODO: MOVE THIS TO POST TESTS
     def test_array_sized_missing_type_field(self):
         fieldsA = [{
                     'name' : 'elem_type',
@@ -37,7 +36,6 @@ class TestYamlDependencyErrorDetection( unittest.TestCase ):
         self.assertEqual( result, YamlDependencyCheckerResult.ARRAY_SIZED_TYPE_FIELD_NOT_DECLARED )
 
 
-    # TODO: MOVE THIS TO POST TESTS
     def test_array_sized_unknown_header(self):
         fieldsA = [{
                     'name' : 'elem_type',

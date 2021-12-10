@@ -130,7 +130,34 @@ You should now see a file called **libcatbuffer.a** which you can link to you pr
 * **[`end_to_end_test`](end_to_end_test/)**: Contains end to end tests where serialized inputs are deserialized and then serialized again to check that the output is equal to the input. The test takes the yaml inputs in the 'yaml_test_inputs' folder, generates C++ outputs, takes the test vectors in 'test_vectors', uses the generated code to deserialize input vectors and then serializes again to compare the result with the initial input vectors.
 
 
-[//]: # (TODO: add a testing subsection here) (add automatic fuzzer test and valgrind check)
+## Testing
+
+The generator includes multiple unit tests located in the **unit_tests** folder. They can be run by using **'python3 -m unittest'** like so:
+
+```bash
+python3 -m unittest -v unit_tests/TestYamlDependencyErrorDetection.py
+```
+
+To test the correct deserializtion/serialization of the generated code, some yaml input tests are included in the folder **yaml_test_inputs**. To run these test run the the following commands while at the base folder:
+
+```bash
+mkdir output
+python3 -m generator yaml_test_inputs/symbol-all-transactions.yaml output-symbol
+
+cd output
+mkdir _build && cd _build
+cmake ..
+make
+
+cd ../end-to-end-tests
+mkdir _build && cd _build
+cmake ..
+make
+
+./main
+```
+
+[//]: # (TODO: Add script for the above and add automatic fuzzer test and valgrind check also)
 
 
 # YAML Input File Format
@@ -345,7 +372,7 @@ Inline fields can be used to inline structs into other structs, so that instead 
 It is possible to define constants in Catbuffer. Although they are not read or written when serializing, they are included as class members when generating code. They can be defined like so:
 
 ```yaml
-  name: VERSION
+- name: VERSION
   type: unit8
   value: 14
   disposition: const
@@ -372,7 +399,7 @@ An array field is just a normal fixed size array with elements of a fixed size.
     type: uint64
 ```
 
-Note that **amount_size** has to be a field in the same struct which appears before the array field. Furthermore, note that **type** can also be a user defined type, but the size of each array element must be the same for all elements, which means that they can not contain arrays of different sizes for example (TODO: ask the core devs about this)
+Note that **amount_size** has to be a field in the same struct which appears before the array field. Furthermore, note that **type** can also be a user defined type, but the size of each array element must be the same for all elements, which means that they can not contain arrays of different sizes for example (TODO: ask the core devs about this). Finally note that if the same size field is used for multiple arrays, that the arrays have to be of equal size when serializing/deserializing (TODO: add check and unit test).
 
 
 (TODO: missing check)
@@ -409,7 +436,7 @@ Given an array sized field, Catbuffer will automagically know how to serialize a
 **MOSAIC_DEFINITION** in this case is an enumerator in the **TransactionType** enum, which also has to be the type of the **elem_type** field mentioned above. Besides the **TRANSACTION_TYPE** constant a **TRANSACTION_VERSION** constant also has to be defined like so:
 
 ```yaml
-    name: TRANSACTION_VERSION
+  - name: TRANSACTION_VERSION
     type: uint8
     value: 3
     disposition: const
@@ -437,7 +464,7 @@ In this way Catbuffer can support evolving structures over time.
 An 'array fill' is a normal array with fixed sized elements, but where the number of elements is computed based on how much data is still pending to be serialized/deserialized. So for example if the total amount of data to deserialize is 'n' bytes and 'm' bytes of data is still pending to be serialized, then the size of the array is 'n-m' bytes. An 'array fill' field is defined like so:
 
 ```yaml
-    name: signatures
+  - name: signatures
     disposition: array fill
     size: 0
     type: Signature

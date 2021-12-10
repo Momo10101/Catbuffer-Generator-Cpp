@@ -1,7 +1,18 @@
 import typing
+from dataclasses import dataclass
 
 from .CppFieldGenerator import ByteToTypeConverter
 
+
+@dataclass
+class EnumDef:
+    type   : str
+    values : set
+
+@dataclass
+class TypeDef: # aka type alias
+    type : str 
+    size : int # if > 1 then the typedef is a struct with an array of 'size' 
 
 class CppTypesGenerator():
     """
@@ -14,8 +25,8 @@ class CppTypesGenerator():
     """
 
     def __init__( self ) -> None:
-        self.name_to_enum : typing.Dict[str, set] = {}  # enum name to enum fields
-        self.name_to_type : typing.Dict[str, set] = {}  # type name to type fields
+        self.name_to_enum : typing.Dict[str, EnumDef] = {}  # enum name to enum fields
+        self.name_to_type : typing.Dict[str, TypeDef] = {}  # type name to type fields
 
         self.enums_code_output = ""  # cpp generated enum code goes here
         self.types_code_output = ""  # cpp generated type code goes here
@@ -71,19 +82,18 @@ class CppTypesGenerator():
         if enum_name in self.name_to_enum:
             print(f"Error: Same enum name, '{enum_name}', defined multiple times!\n")
 
-        #TODO: do a check here!!
-        self.name_to_enum[enum_name] = set()
+        enum_type = ByteToTypeConverter.size_to_type( enum["size"], enum["signedness"] )
+        self.name_to_enum[enum_name] = EnumDef( enum_type, set() )
 
         if "comments" in enum:
             self.enums_code_output += f'/**\n * {enum["comments"]}\n */\n'
 
-        type = ByteToTypeConverter.size_to_type( enum["size"], enum["signedness"] )
-        self.enums_code_output += f'enum class {enum_name} : {type}\n{{\n'
+        self.enums_code_output += f'enum class {enum_name} : {enum_type}\n{{\n'
 
         for value in enum["values"]:
             self.enums_code_output += f'\t{value["name"]} = {value["value"]},' 
             self.enums_code_output += f'//< {value["comments"]}\n' if "comments" in value else "\n"
-            self.name_to_enum[enum_name].add(value["name"])
+            self.name_to_enum[enum_name].values.add(value["name"])
 
         self.enums_code_output += "};\n\n\n"
 
@@ -121,14 +131,15 @@ class CppTypesGenerator():
         if type_name in self.name_to_type:
             print(f"Error: Same type name, '{type_name}', defined multiple times!\n")
 
-        self.name_to_type[type_name] = user_type
 
         coverted_type = ByteToTypeConverter.size_to_type( user_type["size"], user_type["signedness"] )
 
         if("byte" != coverted_type):
             self.types_code_output += f'using {type_name} = {coverted_type};' 
+            self.name_to_type[type_name] = TypeDef( coverted_type , 1 )
         else:
             self.types_code_output += f'using {type_name} = struct {type_name}_t {{ uint8_t data[{user_type["size"]}]; }};' 
+            self.name_to_type[type_name] = TypeDef( coverted_type , user_type["size"] )
 
         self.types_code_output += f'//< {user_type["comments"]}\n' if "comments" in user_type else "\n"
 

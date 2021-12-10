@@ -35,4 +35,7 @@ class ICatbuffer
    * @return  Byte size of catbuffer
 	 */
   virtual size_t Size() = 0;
+
+
+  virtual void Print( const size_t level=0 ) = 0;
 };

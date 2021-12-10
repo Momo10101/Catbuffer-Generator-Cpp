@@ -130,18 +130,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-# Why have disposition=reserved? makes no difference, just keep it as byte
-# condition_value: ROOT --> define where root comes from? from enum? what if multiple enums contain root, which one should we choose
-
-
-

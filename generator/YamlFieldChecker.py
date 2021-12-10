@@ -3,7 +3,7 @@ import numbers
 from enum import Enum, auto
 
 from .CppFieldGenerator import CppFieldGenerator
-
+from .CppTypesGenerator import EnumDef
 
 class YamlFieldCheckResult(Enum):
     OK                              = auto()  # Everything went well
@@ -100,7 +100,7 @@ class YamlFieldChecker():
 
 
     @staticmethod
-    def const( class_name: str, field: dict, enums : typing.Dict[str, dict] ):
+    def const( class_name: str, field: dict, enums : typing.Dict[str, EnumDef ] ):
 
         if "name" not in field:
             return YamlFieldCheckResult.NAME_MISSING, f"\n\nError: 'const' missing 'name' key in struct '{class_name}'!\n\n"
@@ -122,7 +122,7 @@ class YamlFieldChecker():
             if const_type not in enums:
                 return YamlFieldCheckResult.TYPE_UNKNOWN, f"\n\nError: Type '{const_type}' with value '{const_value}' is unknown for const field '{field['name']}' in struct '{class_name}'!\n\n"
 
-            if const_value not in enums[const_type]:
+            if const_value not in enums[const_type].values:
                 return YamlFieldCheckResult.VALUE_NOT_NUMERIC_NOR_ENUM, f"\n\nError: Value of '{const_value}' of type '{const_type}' for const field '{field['name']}' is not numeric nor enum in struct '{class_name}'!\n\n"
 
         return YamlFieldCheckResult.OK, ""

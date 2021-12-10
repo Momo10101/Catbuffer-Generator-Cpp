@@ -54,7 +54,8 @@ class CppClassDeclarationGenerator():
         self.group_version                                          = ""                      # The version of the group
                 
         self.conditions : typing.Dict[str, list]                    = {}                      # Stores a list of condition fields
-                
+        self.size_to_arrays : typing.Dict[str, typing.List[str]]    = {}                      # For each variable used as an array size, stores the list of arrays which depend on that variable 
+
         self.__name_to_enum                                         = user_types.name_to_enum # Dict of all enums
         self.__name_to_type                                         = user_types.name_to_type # Dict of all user defined types
         self.__name_to_class                                        = class_decls
@@ -70,6 +71,8 @@ class CppClassDeclarationGenerator():
         result, result_str = self.__find_condition_fields()
         if result != YamlFieldCheckResult.OK:
             return result, result_str
+
+        self.__find_array_size_fields()
 
         return self.__generate_header()
 
@@ -131,6 +134,32 @@ class CppClassDeclarationGenerator():
         return YamlFieldCheckResult.OK, ""
 
 
+    def __find_array_size_fields( self ):
+        """
+        Finds fields that store array sizes and creates the dictionary 
+        'array size field' -> list of array names (since a variable can be 
+        used as array size for multiple arrays)
+        """
+
+        for field in self.fields:
+
+            if( "disposition" not in field ):
+                continue
+
+            if( "array" != field["disposition"] ):
+                continue
+
+            if( "size" not in field or "name" not in field):
+                continue
+
+            size_var   = field["size"]
+            array_name = field["name"]
+
+            if size_var not in self.size_to_arrays:
+                self.size_to_arrays[ size_var ] = []
+
+            self.size_to_arrays[ size_var ].append( array_name )
+
 
     def __generate_header( self ) -> bool:
         """ 
@@ -151,8 +180,6 @@ class CppClassDeclarationGenerator():
         self.__header_code_output += 'public:\n'
 
         for idx, field in enumerate(self.fields):
-            name     = field["name"]     if "name"     in field else ""
-            size     = field["size"]     if "size"     in field else 0
             comments = field["comments"] if "comments" in field else ""
 
             result, result_str = YamlFieldChecker.check_type(self.class_name, field)
@@ -168,7 +195,7 @@ class CppClassDeclarationGenerator():
 
                 if( "const" == disposition ):
                     # check fields
-                    result, result_str = YamlFieldChecker.const(self.class_name, field, self.__name_to_enum)
+                    result, result_str = YamlFieldChecker.const( self.class_name, field, self.__name_to_enum )
                     if YamlFieldCheckResult.OK != result:
                         return result, result_str
 
@@ -186,7 +213,7 @@ class CppClassDeclarationGenerator():
                         self.group_version = field["value"]
 
                     #generate
-                    self.__header_code_output += CppFieldGenerator.gen_const_field( field_type, name, field["value"], comments )
+                    self.__header_code_output += CppFieldGenerator.gen_const_field( field_type, field["name"], field["value"], comments )
 
                 elif( "inline" == disposition ):
                     # check fields
@@ -204,7 +231,7 @@ class CppClassDeclarationGenerator():
                         return result, result_str
 
                     # generate
-                    self.__header_code_output += CppFieldGenerator.gen_reserved_field( field_type, name, size, comments )
+                    #self.__header_code_output += CppFieldGenerator.gen_reserved_field( field_type, field["name"], field["size"], comments )
 
                 elif( "array" == disposition ):
                     # check fields
@@ -213,7 +240,7 @@ class CppClassDeclarationGenerator():
                         return result, result_str
 
                     # generate
-                    self.__header_code_output += CppFieldGenerator.gen_array_field( field_type, name, comments )
+                    self.__header_code_output += CppFieldGenerator.gen_array_field( field_type, field["name"], comments )
                     self.__lib_includes.add("#include <vector>")
 
                 elif( "array sized" == disposition ):
@@ -226,7 +253,7 @@ class CppClassDeclarationGenerator():
                     self.__dependency_checks.append(field) # check again later when all classes are declared
 
                     # generate
-                    self.__header_code_output += CppFieldGenerator.gen_array_sized_field( name, comments )
+                    self.__header_code_output += CppFieldGenerator.gen_array_sized_field( field["name"], comments )
                     self.__lib_includes.add("#include <vector>")
                     self.__lib_includes.add("#include <memory>")
 
@@ -237,7 +264,7 @@ class CppClassDeclarationGenerator():
                         return result, result_str
 
                     # generate
-                    self.__header_code_output += CppFieldGenerator.gen_array_fill_field( field_type, name, comments )
+                    self.__header_code_output += CppFieldGenerator.gen_array_fill_field( field_type, field["name"], comments )
                     self.__lib_includes.add("#include <vector>")
 
                 else:
@@ -267,17 +294,26 @@ class CppClassDeclarationGenerator():
                         del conditions[cond_var]
                         
                 else: # generate normal field
+                    name = field["name"] if "name" in field else ""
+                    size = field["size"] if "size" in field else 0
+
                     # check name exists
                     if not name:
                         return YamlFieldCheckResult.NAME_MISSING, "\n\nError: Missing 'name' key for field in struct '{self.class_name}'!\n\n"
-                    self.__header_code_output += CppFieldGenerator.gen_normal_field( field_type, name, size, comments )
 
                     # check name not declared yet
                     if name in self.member_vars:
                         return YamlFieldCheckResult.NAME_REDEFINED, f"\n\nError: Same field name '{name}' declared multiple times in struct '{self.class_name}'!\n\n"
 
-                    # save
+                    # save as member var
                     self.member_vars[name] = (idx, field_type)
+
+                    # dont generate field if var is the size of an array (in that case the vector 'size()' variable is used instead)
+                    if name in self.size_to_arrays:
+                        continue
+
+                    # generate code
+                    self.__header_code_output += CppFieldGenerator.gen_normal_field( field_type, name, size, comments )
 
 
             # Add include
@@ -310,6 +346,7 @@ class CppClassDeclarationGenerator():
 
 inherited_methods = """\t
 \t// ICatbuffer inherited methods
-\tbool   Deserialize( RawBuffer& buffer ) override;
-\tbool   Serialize  ( RawBuffer& buffer ) override;
-\tsize_t Size       (                   ) override;\n\n\n"""
+\tbool   Deserialize( RawBuffer& buffer  ) override;
+\tbool   Serialize  ( RawBuffer& buffer  ) override;
+\tsize_t Size       (                    ) override;
+\tvoid   Print      ( const size_t level ) override;\n\n\n"""

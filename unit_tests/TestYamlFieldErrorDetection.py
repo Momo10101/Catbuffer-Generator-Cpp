@@ -1,25 +1,8 @@
 import unittest
 from generator.CppClassDeclarationGenerator import CppClassDeclarationGenerator, YamlFieldCheckResult
 from generator.YamlFieldChecker import YamlFieldCheckResult
-from generator.CppTypesGenerator import CppTypesGenerator
+from generator.CppTypesGenerator import CppTypesGenerator, EnumDef
 
-# [{'comments': 'entity version', 'name': 'version', 'signedness': 'unsigned', 'size': 2, 'type': 'uint16_t'}, {'comments': 'entity network', 'name': 'network', 'type': 'NetworkType'}, {'comments': 'entity timestamp', 'name': 'timestamp', 'type': 'Timestamp'}, 
-        
-# {'comments': 'entity signer public key size', 'disposition': 'reserved', 'name': 'signer_public_key_size', 'signedness': 'unsigned', 'size': 4, 'type': 'byte', 'value': 32}, {'comments': 'entity signer public key', 'name': 'signer_public_key', 'type': 'PublicKey'}, {'comments': 'entity signature size', 'disposition': 'reserved', 'name': 'signature_size', 'signedness': 'unsigned', 'size': 4, 'type': 'byte', 'value': 64}, {'comments': 'entity signature', 'name': 'signature', 'type': 'Signature'}]
-
-#    def test_upper(self):
-#        self.assertEqual('foo'.upper(), 'FOO')
-#
-#    def test_isupper(self):
-#        self.assertTrue('FOO'.isupper())
-#        self.assertFalse('Foo'.isupper())
-#
-#    def test_split(self):
-#        s = 'hello world'
-#        self.assertEqual(s.split(), ['hello', 'world'])
-#        # check that s.split fails when the separator is not a string
-#        with self.assertRaises(TypeError):
-#            s.split(2)
 
 
 class TestYamlFieldErrorDetection( unittest.TestCase ):
@@ -27,8 +10,8 @@ class TestYamlFieldErrorDetection( unittest.TestCase ):
     def check( self, fields: list, pass_result: YamlFieldCheckResult ):
 
         types = CppTypesGenerator()
-        types.name_to_enum["DummyEnum"] = set()
-        types.name_to_enum["DummyEnum"].add("DummyEnumValue")
+        types.name_to_enum["DummyEnum"] = EnumDef( "int8", set() )
+        types.name_to_enum["DummyEnum"].values.add("DummyEnumValue")
 
         decl = CppClassDeclarationGenerator()
         result, error_str = decl.init( "TestStruct", fields, types, set({"DummyClass"}) )
@@ -334,20 +317,3 @@ if __name__ == '__main__':
     unittest.main()
 
 
-#value ="a"
-#a = ['a','b','c']
-#b = ['d','e','f']
-#d = ['g','a','i']
-#c = ['j','k','l']
-#
-#any([True for x in [a,b,c,d] if value in x])
-#
-#
-#[x for x in [a,b,c,d] if value in x]
-#
-#
-#print( value in a,b,c,d )
-#
-#any(value in lists for lists in [a,b,c,d]):
-#
-#any(subdir in path_elements for subdir in ['int', 'bench', 'stress']):
