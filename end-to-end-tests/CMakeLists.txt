@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 # set the project name
 project(catbuffer)
 
-#file(GLOB SRCS output/*)
-#add_library(catbuffer SRCS)
-
 include_directories(${PROJECT_SOURCE_DIR}/../output-symbol/generated_src/ ${PROJECT_SOURCE_DIR}/../output-symbol/static_src/)
 
 link_directories(${PROJECT_SOURCE_DIR}/../output-symbol/_build/)

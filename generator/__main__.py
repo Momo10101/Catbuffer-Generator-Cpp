@@ -9,7 +9,8 @@ from .CppClassDefinitionGenerator import CppClassDefinitionGenerator
 from .CppClassDeclarationGenerator import CppClassDeclarationGenerator 
 from .YamlFieldChecker import YamlFieldCheckResult
 from .CppTypesGenerator import CppTypesGenerator
-from .CppEnumeratorToClassGenerator import CppEnumeratorToClassGenerator
+from .CppConvertersGenerator import CppConvertersGenerator
+
 
 
 def main():
@@ -25,6 +26,7 @@ def main():
         3) Generate class definitions (*.cpp) for complex types
         4) Generate 'enum to class' converters in file 'converters.h'
     """
+
 
     # Check if enough arguments
     if len(sys.argv) < 3:
@@ -54,8 +56,29 @@ def main():
 
     Path( gen_output_folder ).mkdir( parents=True, exist_ok=True )
 
+
+    # Copy static files
     copy_tree("cpp_source", output_folder+"/static_src")
-    shutil.copy("cpp_build_files/CMakeLists.txt", output_folder+"/")
+
+
+    # Generate pretty print or not
+    generate_print_methods = False
+
+    if len(sys.argv) == 4:
+       if( sys.argv[3] == "--generate-print" ):
+           generate_print_methods = True
+       else:
+           print(f"Error: unknown argument '{sys.argv[3]}'")
+           exit(1)
+
+
+    # Copy build file
+    if not generate_print_methods:
+        cmd_file = Path(output_folder+"/static_src/cmd.cpp")
+        cmd_file.unlink()
+        shutil.copy("cpp_build_files/CMakeLists.txt", output_folder+"/")
+    else:
+        shutil.copy("cpp_build_files/CMakeLists_with_cmd.txt", output_folder+"/CMakeLists.txt")
 
 
     # Read YAML file
@@ -76,7 +99,7 @@ def main():
             class_decls[elem['name']] = CppClassDeclarationGenerator()
 
     # Generate user defined types
-    print("\nGenerating user types:")
+    print("\nGenerating typedefs:")
     for elem in data_loaded:
         if 'byte' == elem['type']:
             types_generator.add_user_type( elem )
@@ -121,7 +144,7 @@ def main():
 
 
     # Generate enum to class converters
-    converter = CppEnumeratorToClassGenerator( class_decls, types_generator )
+    converter = CppConvertersGenerator( class_decls, types_generator, generate_print_methods )
     converter.write_file( gen_output_folder )
 
     print("\nDone!")

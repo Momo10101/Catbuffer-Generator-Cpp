@@ -38,7 +38,7 @@ int main( int argc, char* argv[] )
     Transaction transaction;
     bool succ = transaction.Deserialize( header );
 
-    if(!succ)
+    if( !succ )
     {
       printf("Error: Was not able to deserialize header!\n");
       return 1;
