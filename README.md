@@ -10,6 +10,8 @@ A simple C++ code generator for serializing and deserializing Catbuffer schemas.
 * [Overview](#overview)
   * [Instructions](#instructions)
   * [Repository Structure](#repository-structure)
+  * [Testing](#testing)
+  * [Prettyprinting](#prettyprinting)
 * [YAML Input File Format](#yaml-input-file-format)
   * [Builtin Data Types](#builtin-data-types)
   * [Custom Data Types](#custom-data-types)
@@ -32,7 +34,7 @@ A simple C++ code generator for serializing and deserializing Catbuffer schemas.
 
 
 # Overview
-----------
+
 Catbuffer is a very simple and memory efficient data serialization format. No extra information or padding is read or written, apart from what is defined by the user.
 Catbuffer is the serialization mechanism originally developed for the Symbol blockchain to serialize and deserialize data structures for sending and receiving data between network clients. It consist of three components. The **catbuffer-schema**, which is the interface description language used to define the data structures; The **catbuffer-parser** which parses the schemas and generates a .yaml output file; The **catbuffer-generator** which takes the generated .yaml file as input and generates C++ files which are compiled into a library. The process is shown below: 
 
@@ -160,8 +162,30 @@ make
 [//]: # (TODO: Add script for the above and add automatic fuzzer test and valgrind check also)
 
 
+## Prettyprinting
+The generator also supports generating optional C++ code for printing out deserialized data. It is also possible to generate a command line interface (cli) for deserializing raw files and hex strings. To add support for prettyprinting and cli, use the '--generate-print' option:
+
+```bash
+python3 -m generator input_file.yaml output_directory --generate-print
+```
+
+This will add a 'Print()' method to the 'ICatbuffer' interface and an executable called 'cmd' which can be used to deserialize hex strings and raw files like so:
+
+```bash
+./cmd --hex Coordinate 0D0000000E0000000F000000
+Coordinate
+{
+	uint32_t x: 13
+	uint32_t y: 14
+	uint32_t z: 15
+}
+
+Data deserialized successfully!
+
+```
+
+
 # YAML Input File Format
--------------------------
 
 The generator accepts YAML files and outputs C++ files. An example of a simple data structure defined in YAML is shown below:
 

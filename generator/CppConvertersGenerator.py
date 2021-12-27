@@ -175,10 +175,14 @@ class CppConvertersGenerator():
 
     def __generate_string_to_class_method( self, class_declarations: typing.Dict[str, CppClassDeclarationGenerator] ):
 
+        if 0 == len(class_declarations):
+            return
+
+
         self.__definition_code_output += f'std::unique_ptr<ICatbuffer> create_type( std::string buffer_name )\n{{\n'
 
         class_names = list(class_declarations.keys())
-        first_class = class_names[1]
+        first_class = class_names[0]
         
         self.__definition_code_output += f'\tif("{first_class}" == buffer_name){{ return std::unique_ptr<ICatbuffer>( new {first_class}() ); }}\n'
         self.__includes.add(f'#include "{first_class}.h"')
@@ -199,8 +203,8 @@ class CppConvertersGenerator():
 
             group_names.append(enum_class)
 
+        self.__definition_code_output += f'std::unique_ptr<ICatbuffer> create_type( RawBuffer& inputBuf, std::string group_name )\n{{\n'
         if len(group_names) > 0:
-            self.__definition_code_output += f'std::unique_ptr<ICatbuffer> create_type( RawBuffer& inputBuf, std::string group_name )\n{{\n'
             self.__definition_code_output += f'\tif( "{group_names[0]}" == group_name ){{ return create_type_{group_names[0]}( inputBuf ); }}\n'
 
             for group_name in group_names[1:]:
@@ -209,7 +213,11 @@ class CppConvertersGenerator():
             self.__definition_code_output += f'\telse\n\t{{\n'
             self.__definition_code_output += f'\t\tprintf( "Error: %s is not a valid buffer type!\\n", group_name.c_str() );\n'
             self.__definition_code_output += f'\t\texit(1);\n\t}}\n}}\n\n'
-        
+        else:
+            self.__definition_code_output += f'\t(void) inputBuf;\n'
+            self.__definition_code_output += f'\tprintf( "Error: Buffer type %s was not defined in the schemas!\\n", group_name.c_str() );\n'
+            self.__definition_code_output += f'\texit(1);\n\n}}\n\n'
+
 
     def __generate_rawbuffer_to_class_methods( self ):
         group_names = []

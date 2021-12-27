@@ -26,7 +26,8 @@ class CppClassDefinitionGenerator():
     def init( self, 
               class_decl:               CppClassDeclarationGenerator, 
               class_name_to_class_decl: typing.Dict[str, CppClassDeclarationGenerator],
-              types:                    CppTypesGenerator ) -> None:
+              types:                    CppTypesGenerator,
+              prettyprinter:            bool = False ) -> None:
         """
         Parameters
         ----------
@@ -39,6 +40,9 @@ class CppClassDefinitionGenerator():
 
         types : CppTypesGenerator
             A list of all user defined types, used for type checking
+
+        prettyprinter: bool, optional
+            Set to true for pretty printing functionality
         """
 
         self.__class_decl                  = class_decl
@@ -46,6 +50,8 @@ class CppClassDefinitionGenerator():
  
         self.__includes                    = set()
         self.__include_code_output         = ""
+
+        self.__prettyprinter               = prettyprinter
 
         self.__deserializer                = CppDeserializationGenerator( types, class_decl.class_name, class_decl.size_to_arrays )
         self.__serializer                  = CppSerializationGenerator( types, class_decl.class_name, class_decl.size_to_arrays )
@@ -64,7 +70,9 @@ class CppClassDefinitionGenerator():
         f.write( self.__deserializer.generate() )
         f.write( self.__serializer.generate() )
         f.write( self.__size_generator.generate() )
-        f.write( self.__print_generator.generate() )
+
+        if self.__prettyprinter:
+            f.write( self.__print_generator.generate() )
 
 
 

@@ -2,8 +2,9 @@
 
 #include <cstdlib>
 #include "RawBuffer.h"
+#include "IPrettyPrinter.h"
 
-class ICatbuffer
+class ICatbuffer : public IPrettyPrinter
 {
 public:
 

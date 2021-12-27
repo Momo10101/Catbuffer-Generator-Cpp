@@ -74,10 +74,16 @@ def main():
 
     # Copy build file
     if not generate_print_methods:
-        cmd_file = Path(output_folder+"/static_src/cmd.cpp")
-        cmd_file.unlink()
+        file = Path(output_folder+"/static_src/cmd.cpp")
+        file.unlink()
+        file = Path(output_folder+"/static_src/ICatbufferPrint.h")
+        file.unlink()
+        file = Path(output_folder+"/static_src/IPrettyPrinter.h")
+        file.unlink()
+
         shutil.copy("cpp_build_files/CMakeLists.txt", output_folder+"/")
     else:
+        shutil.move(output_folder+"/static_src/ICatbufferPrint.h", output_folder+"/static_src/ICatbuffer.h")
         shutil.copy("cpp_build_files/CMakeLists_with_cmd.txt", output_folder+"/CMakeLists.txt")
 
 
@@ -116,7 +122,7 @@ def main():
             # Generate class declaration
             class_name         = elem['name']
             class_dec_gen      = class_decls[class_name]
-            result, result_str = class_dec_gen.init(class_name, elem['layout'], types_generator, class_decls)
+            result, result_str = class_dec_gen.init(class_name, elem['layout'], types_generator, class_decls, elem['comments'], generate_print_methods)
 
             if result != YamlFieldCheckResult.OK:
                 print(result_str)
@@ -137,7 +143,7 @@ def main():
         if 'struct' == elem['type']:
             class_decl         = class_decls[elem['name']]
             class_def_gen      = CppClassDefinitionGenerator()
-            class_def_gen.init( class_decl, class_decls, types_generator )
+            class_def_gen.init( class_decl, class_decls, types_generator, generate_print_methods )
 
             class_def_gen.write_file( gen_output_folder+f'/{class_decl.class_name}.cpp' )
             print("\t"+elem["name"])

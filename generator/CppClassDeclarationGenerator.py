@@ -17,11 +17,12 @@ class CppClassDeclarationGenerator():
     """
 
     def init( self, 
-              class_name:  str,
-              fields:      dict,
-              user_types:  CppTypesGenerator,
-              class_decls: typing.Dict[str, "CppClassDeclarationGenerator"],
-              comment:     str = ""
+              class_name:      str,
+              fields:          dict,
+              user_types:      CppTypesGenerator,
+              class_decls:     typing.Dict[str, "CppClassDeclarationGenerator"],
+              comment:         str = "",
+              prettyprinter:   bool = False
               ) -> typing.Tuple[YamlFieldCheckResult, str]:
         """
         Parameters
@@ -39,6 +40,9 @@ class CppClassDeclarationGenerator():
         comment : str, optional
             Description of the class which will be used as a doxygen
             comment.
+
+        prettyprinter: bool, optional
+            Set to true for pretty printing functionality
 
         returns : bool
             True if class correctly initialized using input parameters
@@ -67,6 +71,8 @@ class CppClassDeclarationGenerator():
         self.__header_code_output                                   = ""                      # Generated C++ class declaration code goes here
                     
         self.__dependency_checks : typing.List[dict]                = list()
+
+        self.__prettyprinter                                        = prettyprinter
 
         result, result_str = self.__find_condition_fields()
         if result != YamlFieldCheckResult.OK:
@@ -177,7 +183,11 @@ class CppClassDeclarationGenerator():
         self.__header_code_output += f'\t{self.class_name}(){{ }};\n'      # constructor
         self.__header_code_output += f'\t~{self.class_name}(){{ }};\n\n\n' # destructor
         self.__header_code_output += inherited_methods
-        self.__header_code_output += 'public:\n'
+
+        if self.__prettyprinter:
+            self.__header_code_output += "\tvoid   Print      ( const size_t level ) override;\n"
+
+        self.__header_code_output += '\n\npublic:\n'
 
         for idx, field in enumerate(self.fields):
             comments = field["comments"] if "comments" in field else ""
@@ -337,6 +347,10 @@ class CppClassDeclarationGenerator():
         self.__include_code_output += '#include "types.h"\n'
         self.__include_code_output += '#include "ICatbuffer.h"\n\n'
 
+        if self.__prettyprinter:
+            self.__include_code_output += '#include "IPrettyPrinter.h"\n\n'
+
+
         for include in self.__includes:
             self.__include_code_output += (include + "\n")
 
@@ -348,5 +362,4 @@ inherited_methods = """\t
 \t// ICatbuffer inherited methods
 \tbool   Deserialize( RawBuffer& buffer  ) override;
 \tbool   Serialize  ( RawBuffer& buffer  ) override;
-\tsize_t Size       (                    ) override;
-\tvoid   Print      ( const size_t level ) override;\n\n\n"""
+\tsize_t Size       (                    ) override;\n"""
