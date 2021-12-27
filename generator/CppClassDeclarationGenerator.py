@@ -61,7 +61,7 @@ class CppClassDeclarationGenerator():
         self.size_to_arrays : typing.Dict[str, typing.List[str]]    = {}                      # For each variable used as an array size, stores the list of arrays which depend on that variable 
 
         self.__name_to_enum                                         = user_types.name_to_enum # Dict of all enums
-        self.__name_to_type                                         = user_types.name_to_type # Dict of all user defined types
+        self.__name_to_alias                                        = user_types.name_to_alias # Dict of all user defined types
         self.__name_to_class                                        = class_decls
                     
         self.__lib_includes : typing.Set[str]                       = set()                   # Set of all C++ library includes
@@ -286,7 +286,7 @@ class CppClassDeclarationGenerator():
 
                 if field_type not in CppFieldGenerator.builtin_types and \
                    field_type not in self.__name_to_enum and \
-                   field_type not in self.__name_to_type and \
+                   field_type not in self.__name_to_alias and \
                    field_type not in self.__name_to_class:
                     return YamlFieldCheckResult.TYPE_UNKNOWN, f"\n\nError: Type '{field_type}' in struct '{self.class_name}' not defined'!\n\n"
 

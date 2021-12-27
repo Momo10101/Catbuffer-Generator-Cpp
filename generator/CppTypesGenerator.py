@@ -10,23 +10,23 @@ class EnumDef:
     values : set
 
 @dataclass
-class TypeDef: # aka type alias
+class AliasDef: # aka type alias
     type : str 
     size : int # if > 1 then the typedef is a struct with an array of 'size' 
 
 class CppTypesGenerator():
     """
-    Takes dict defining enums and user defined types and generates C++
+    Takes dict defining enums and alias types and generates C++
     declaration code.
 
-    Enums are added by calling 'add_enum_type()' and types are added 
-    by calling 'add_user_type()'. When all enums and types have been 
+    Enums are added by calling 'add_enum_type()' and aliases are added 
+    by calling 'add_alias()'. When all enums and aliases have been 
     added, a C++ generated file can be written by calling 'write_file()'
     """
 
     def __init__( self ) -> None:
-        self.name_to_enum : typing.Dict[str, EnumDef] = {}  # enum name to enum fields
-        self.name_to_type : typing.Dict[str, TypeDef] = {}  # type name to type fields
+        self.name_to_enum  : typing.Dict[str, EnumDef]  = {}  # enum  name to enum  fields
+        self.name_to_alias : typing.Dict[str, AliasDef] = {}  # alias name to alias fields
 
         self.enums_code_output = ""  # cpp generated enum code goes here
         self.types_code_output = ""  # cpp generated type code goes here
@@ -99,16 +99,16 @@ class CppTypesGenerator():
 
 
 
-    def add_user_type( self, user_type: dict ) -> None:
+    def add_alias( self, user_type: dict ) -> None:
         """
-        Takes a dict that defines a user defined type and converts it to cpp code. 
+        Takes a dict that defines an alias type and converts it to cpp code. 
         This method can be called as many times as necessary to add
-        multiple user defined types. 
+        multiple alias types. 
 
         Parameters
         ----------
         user_type : dict
-            A dictionary which defines the type name, values, type and
+            A dictionary which defines the alias name, values, type and
             comments. An example input is shown below in yaml format:
 
                 ---------------------------------------------------------
@@ -128,7 +128,7 @@ class CppTypesGenerator():
 
         type_name = user_type["name"]
 
-        if type_name in self.name_to_type:
+        if type_name in self.name_to_alias:
             print(f"Error: Same type name, '{type_name}', defined multiple times!\n")
 
 
@@ -136,10 +136,10 @@ class CppTypesGenerator():
 
         if("byte" != coverted_type):
             self.types_code_output += f'using {type_name} = {coverted_type};' 
-            self.name_to_type[type_name] = TypeDef( coverted_type , 1 )
+            self.name_to_alias[type_name] = AliasDef( coverted_type , 1 )
         else:
             self.types_code_output += f'using {type_name} = struct {type_name}_t {{ uint8_t data[{user_type["size"]}]; }};' 
-            self.name_to_type[type_name] = TypeDef( coverted_type , user_type["size"] )
+            self.name_to_alias[type_name] = AliasDef( coverted_type , user_type["size"] )
 
         self.types_code_output += f'//< {user_type["comments"]}\n' if "comments" in user_type else "\n"
 

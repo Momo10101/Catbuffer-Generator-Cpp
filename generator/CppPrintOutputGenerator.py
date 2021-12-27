@@ -13,7 +13,7 @@ class CppPrintOutputGenerator():
 
     def __init__( self, types: CppTypesGenerator, class_name: str, size_to_arrays : typing.Dict[str, typing.List[str]] ) -> None:
         self.__name_to_enum   = types.name_to_enum
-        self.__name_to_type   = types.name_to_type
+        self.__name_to_alias  = types.name_to_alias
         self.__size_to_arrays = size_to_arrays
 
         self.__code_output   = f'void {class_name}::Print( size_t level )\n{{\n'
@@ -26,8 +26,8 @@ class CppPrintOutputGenerator():
     def normal_field( self, var_type: str, var_name: str ):
         member_name = CppFieldGenerator.convert_to_field_name(var_name)
 
-        if var_type in self.__name_to_type:
-            typedef = self.__name_to_type[var_type]
+        if var_type in self.__name_to_alias:
+            typedef = self.__name_to_alias[var_type]
 
             if typedef.size == 1:
                 self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << +(static_cast<{typedef.type}>({member_name})) << "\\n";\n'

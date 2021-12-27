@@ -15,7 +15,7 @@ class CppDeserializationGenerator():
 
     def __init__( self, types: CppTypesGenerator, class_name: str, size_to_arrays : typing.Dict[str, typing.List[str]] ) -> None:
         self.__name_to_enum   = types.name_to_enum
-        self.__name_to_type   = types.name_to_type
+        self.__name_to_alias  = types.name_to_alias
         self.__size_to_arrays = size_to_arrays
         self.__class_name     = class_name
 
@@ -29,7 +29,7 @@ class CppDeserializationGenerator():
     def normal_field( self, var_type: str, var_name: str, reserved: bool = False ) -> str:
         member_name = CppFieldGenerator.convert_to_field_name(var_name)
 
-        if var_type in self.__name_to_type or var_type in self.__name_to_enum or var_type in CppFieldGenerator.builtin_types:
+        if var_type in self.__name_to_alias or var_type in self.__name_to_enum or var_type in CppFieldGenerator.builtin_types:
             self.__add_ptr_var = True
             self.__code_output += f'\tptr = buffer.GetOffsetPtrAndMove( sizeof({var_type}) ); if(!ptr){{ return false; }}\n'
 

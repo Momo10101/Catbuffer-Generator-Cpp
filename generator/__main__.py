@@ -104,11 +104,11 @@ def main():
         elif 'struct' == elem['type']:
             class_decls[elem['name']] = CppClassDeclarationGenerator()
 
-    # Generate user defined types
-    print("\nGenerating typedefs:")
+    # Generate alias types
+    print("\nGenerating alias types:")
     for elem in data_loaded:
         if 'byte' == elem['type']:
-            types_generator.add_user_type( elem )
+            types_generator.add_alias( elem )
             print("\t"+elem["name"])
 
     types_generator.write_file(gen_output_folder+"/types.h")
