@@ -18,7 +18,7 @@ class CppPrintOutputGenerator():
 
         self.__code_output   = f'void {class_name}::Print( size_t level )\n{{\n'
         self.__code_output  += f"\tstd::string tabs( level, '\\t' );\n"
-        self.__code_output  += f'\tstd::cout << tabs << "{class_name}\\n";\n'
+        self.__code_output  += f'\tstd::cout << tabs << "{class_name} (" << Size() <<" bytes)\\n";\n'
         self.__code_output  += f'\tstd::cout << tabs << "{{\\n";\n\n'
 
 
@@ -30,7 +30,7 @@ class CppPrintOutputGenerator():
             typedef = self.__name_to_alias[var_type]
 
             if typedef.size == 1:
-                self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << +(static_cast<{typedef.type}>({member_name})) << "\\n";\n'
+                self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << +(static_cast<{typedef.type}>({member_name})) << " (" << sizeof({member_name}) <<" bytes)\\n";\n'
             else:
                 self.__code_output += f'\n'
                 self.__code_output += f'\tstd::cout << tabs << "\\t{typedef.type} " << "{member_name}[ " << {typedef.size} << " ] = |";\n'
@@ -38,20 +38,20 @@ class CppPrintOutputGenerator():
                 self.__code_output += f'\t{{\n'
                 self.__code_output += f'\t\tstd::cout << std::setfill(\'0\') << /*std::setw(2) << std::hex <<*/ +{member_name}.data[j] << "|";\n'
                 self.__code_output += f'\t}}\n'
-                self.__code_output += f'\tstd::cout << "\\n";\n'
+                self.__code_output += f'\tstd::cout <<  " (" << sizeof({member_name}) <<" bytes)\\n";\n'
 
         elif var_type in self.__name_to_enum:
             enum_type = self.__name_to_enum[var_type].type
-            self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << +static_cast<{enum_type}>({member_name}) << "\\n";\n'
+            self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << +static_cast<{enum_type}>({member_name}) << " (" << sizeof({member_name}) <<" bytes)\\n";\n'
 
         elif var_type in CppFieldGenerator.builtin_types:
 
             if var_name in self.__size_to_arrays:
                 array_name = self.__size_to_arrays[var_name][0]
                 array_name = CppFieldGenerator.convert_to_field_name(array_name)
-                self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << {array_name}.size() << "\\n";\n'
+                self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << {array_name}.size() << " (" << sizeof({var_type}) <<" bytes)\\n";\n'
             else:
-                self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << +{member_name} << "\\n";\n'
+                self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << +{member_name} << " (" << sizeof({member_name}) <<" bytes)\\n";\n'
 
         else:
             self.__code_output += f'\t{member_name}.Print( level+1 );\n'
@@ -70,7 +70,7 @@ class CppPrintOutputGenerator():
         self.normal_field(array_type, array_name+'[i]')
 
         self.__code_output += f'\t}}\n'
-        self.__code_output += f'\tstd::cout << tabs <<"\\t]\\n";\n'
+        self.__code_output += f'\tstd::cout << tabs <<"\\t] (" << sizeof({array_type}) * {arr_member_name}.size() <<" bytes)\\n";\n'
 
 
 
@@ -81,7 +81,7 @@ class CppPrintOutputGenerator():
 
 
     def reserved_field( self, var_type: str, var_name: str, var_value: str ):
-        self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {var_name}: " << {var_value} << "\\n";\n'
+        self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {var_name}: " << {var_value} << " (" << sizeof({var_type}) <<" bytes)\\n";\n'
 
 
 
