@@ -83,6 +83,7 @@
   signedness: unsigned
   size: 32
   type: byte
+  print: hex
 - comments: ''
   name: VotingPublicKey
   signedness: unsigned
@@ -93,6 +94,7 @@
   signedness: unsigned
   size: 64
   type: byte
+  print: hex
 - comments: binary layout for a mosaic
   layout:
   - comments: mosaic identifier
@@ -2092,6 +2094,7 @@
     name: message
     size: message_size
     type: byte
+    print: ascii
   name: TransferTransactionBody
   type: struct
 - comments: binary layout for a non-embedded transfer transaction

@@ -12,7 +12,8 @@ class EnumDef:
 @dataclass
 class AliasDef: # aka type alias
     type : str 
-    size : int # if > 1 then the typedef is a struct with an array of 'size' 
+    size : int      # if > 1 then the typedef is a struct with an array of 'size' 
+    hint : str = "" # hint on how alias should be printed by Print() method (hex, ascii, etc)
 
 class CppTypesGenerator():
     """
@@ -138,8 +139,9 @@ class CppTypesGenerator():
             self.types_code_output += f'using {type_name} = {coverted_type};' 
             self.name_to_alias[type_name] = AliasDef( coverted_type , 1 )
         else:
+            print_hint = user_type["print"] if "print" in user_type else ""
             self.types_code_output += f'using {type_name} = struct {type_name}_t {{ uint8_t data[{user_type["size"]}]; }};' 
-            self.name_to_alias[type_name] = AliasDef( coverted_type , user_type["size"] )
+            self.name_to_alias[type_name] = AliasDef( coverted_type , user_type["size"], print_hint  )
 
         self.types_code_output += f'//< {user_type["comments"]}\n' if "comments" in user_type else "\n"
 

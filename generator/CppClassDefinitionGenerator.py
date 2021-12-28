@@ -92,8 +92,9 @@ class CppClassDefinitionGenerator():
 
         for field in fields:
             var_type = field["type"]
-            name     = field["name"] if "name" in field else var_type
-            size     = field["size"] if "size" in field else ""
+            name     = field["name"]  if "name"  in field else var_type
+            size     = field["size"]  if "size"  in field else ""
+            print    = field["print"] if "print" in field else ""
 
 
             if "disposition" in field:
@@ -107,7 +108,7 @@ class CppClassDefinitionGenerator():
                     self.__deserializer.array_field( var_type, name, size )
                     self.__serializer.array_field( var_type, name )
                     self.__size_generator.array_field( var_type, name )
-                    self.__print_generator.array_field( var_type, name )
+                    self.__print_generator.array_field( var_type, name, print )
 
                 elif "inline" == disposition:
                     self.__deserializer.inline_field( name )
@@ -161,7 +162,7 @@ class CppClassDefinitionGenerator():
                     self.__deserializer.normal_field( var_type, name )
                     self.__serializer.normal_field( var_type, name )
                     self.__size_generator.normal_field( var_type, name )
-                    self.__print_generator.normal_field( var_type, name )
+                    self.__print_generator.normal_field( var_type, name, print )
 
 
 

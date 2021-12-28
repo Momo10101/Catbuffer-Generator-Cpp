@@ -22,8 +22,7 @@ class CppPrintOutputGenerator():
         self.__code_output  += f'\tstd::cout << tabs << "{{\\n";\n\n'
 
 
-
-    def normal_field( self, var_type: str, var_name: str ):
+    def normal_field( self, var_type: str, var_name: str, print_hint: str = "" ):
         member_name = CppFieldGenerator.convert_to_field_name(var_name)
 
         if var_type in self.__name_to_alias:
@@ -32,12 +31,16 @@ class CppPrintOutputGenerator():
             if typedef.size == 1:
                 self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << +(static_cast<{typedef.type}>({member_name})) << " (" << sizeof({member_name}) <<" bytes)\\n";\n'
             else:
-                self.__code_output += f'\n'
-                self.__code_output += f'\tstd::cout << tabs << "\\t{typedef.type} " << "{member_name}[ " << {typedef.size} << " ] = |";\n'
+                print_mod, separator = get_print_mod(typedef.hint)
+
+                self.__code_output += f'\n\t{{'
+                self.__code_output += f'\tstd::ios_base::fmtflags flags( std::cout.flags() );\n'
+                self.__code_output += f'\tstd::cout << tabs << "\\t{typedef.type} " << "{member_name}[ " << {typedef.size} << " ] = ";\n'
                 self.__code_output += f'\tfor( size_t j=0; j<{typedef.size}; ++j )\n'
                 self.__code_output += f'\t{{\n'
-                self.__code_output += f'\t\tstd::cout << std::setfill(\'0\') << /*std::setw(2) << std::hex <<*/ +{member_name}.data[j] << "|";\n'
+                self.__code_output += f'\t\tstd::cout <<  {print_mod}{member_name}.data[j] {separator};\n'
                 self.__code_output += f'\t}}\n'
+                self.__code_output += f'\tstd::cout.flags( flags );\n\t}}\n'
                 self.__code_output += f'\tstd::cout <<  " (" << sizeof({member_name}) <<" bytes)\\n";\n'
 
         elif var_type in self.__name_to_enum:
@@ -51,14 +54,18 @@ class CppPrintOutputGenerator():
                 array_name = CppFieldGenerator.convert_to_field_name(array_name)
                 self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << {array_name}.size() << " (" << sizeof({var_type}) <<" bytes)\\n";\n'
             else:
-                self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << +{member_name} << " (" << sizeof({member_name}) <<" bytes)\\n";\n'
+                print_mod, _ = get_print_mod(print_hint)
+                self.__code_output += f'\n\t{{'
+                self.__code_output += f'\tstd::ios_base::fmtflags flags( std::cout.flags() );\n'
+                self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {member_name}: " << {print_mod}{member_name} << " (" << sizeof({member_name}) <<" bytes)\\n";\n'
+                self.__code_output += f'\tstd::cout.flags( flags );\n\t}}\n'
 
         else:
             self.__code_output += f'\t{member_name}.Print( level+1 );\n'
 
 
 
-    def array_field( self, array_type: str, array_name: str ):
+    def array_field( self, array_type: str, array_name: str, print_hint: str = "" ):
         arr_member_name = CppFieldGenerator.convert_to_field_name( array_name )
 
         self.__code_output += f'\n'
@@ -67,7 +74,7 @@ class CppPrintOutputGenerator():
         self.__code_output += f'\tfor( size_t i=0; i<{arr_member_name}.size(); ++i )\n'
         self.__code_output += f'\t{{\n'
 
-        self.normal_field(array_type, array_name+'[i]')
+        self.normal_field(array_type, array_name+'[i]', print_hint)
 
         self.__code_output += f'\t}}\n'
         self.__code_output += f'\tstd::cout << tabs <<"\\t] (" << sizeof({array_type}) * {arr_member_name}.size() <<" bytes)\\n";\n'
@@ -113,3 +120,21 @@ class CppPrintOutputGenerator():
         self.__code_output  += '\n\tstd::cout << tabs << "}\\n";\n'
         self.__code_output  += "}\n"
         return self.__code_output
+
+
+
+def get_print_mod( print_hint: str ):
+    if print_hint == "hex":
+        print_mod = "std::setfill(\'0\') << std::setw(2) << std::hex << +"
+        separator = ''
+    elif print_hint == "ascii":
+        print_mod = ""
+        separator = ''
+    elif print_hint == "num" or print_hint == "": 
+        print_mod = "+"
+        separator = '<< "|"'
+    else:
+        print(f"Error: Unknown hint '{print_hint}' !")
+        exit(1)
+
+    return print_mod, separator

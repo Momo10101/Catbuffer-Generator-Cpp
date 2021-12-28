@@ -77,6 +77,6 @@ class CppSizeGenerator():
 
     def generate( self ) -> str:
         self.__code_output += "\treturn size;\n"
-        self.__code_output += "}\n"
+        self.__code_output += "}\n\n\n"
 
         return self.__code_output
