@@ -172,12 +172,12 @@ python3 -m generator input_file.yaml output_directory --generate-print
 This will add a 'Print()' method to the 'ICatbuffer' interface and an executable called 'cmd' which can be used to deserialize hex strings and raw files like so:
 
 ```bash
-./cmd --hex Coordinate 0D0000000E0000000F000000
-Coordinate
+$./cmd --hex Coordinate 0D0000000E0000000F000000
+Coordinate (12 bytes)
 {
-	uint32_t x: 13
-	uint32_t y: 14
-	uint32_t z: 15
+	uint32_t x: 13 (4 bytes)
+	uint32_t y: 14 (4 bytes)
+	uint32_t z: 15 (4 bytes)
 }
 
 Data deserialized successfully!
@@ -303,9 +303,9 @@ Structs are the most elaborate custom defined types in Catbuffer and can contain
 
 *array*
 
-*array sized*
+*array_sized*
 
-*array fill*
+*array_fill*
 
 
 The subsections below will explain the above field types in more detail.
@@ -376,10 +376,6 @@ Reserved fields are useful for when a field is reserved for future use and shoul
 Note that when serializing/deserializing, if the value read for a reserved field does not equal the **value** key, it is considered an error and the serialization/deserialization will fail.
 
 
-TODO: Value check is still to be implemented. Some questions: should reserved fields always have a value? Should reserved fields appear as class members?
-
-
-
 ### Inline Field
 
 Inline fields can be used to inline structs into other structs, so that instead of doing *OuterStruct.InnerStruct.my_variable*, one can do *OuterStruct.my_variable*. An example of how to do an inline field is shown below
@@ -397,9 +393,8 @@ It is possible to define constants in Catbuffer. Although they are not read or w
 
 ```yaml
 - name: VERSION
-  type: unit8
+  type: const unit8
   value: 14
-  disposition: const
 ```
 
 Which would generate a C++ class member similar to this:
@@ -409,28 +404,19 @@ const uint8_t VERSION = 14;
 ```
 
 
-(TODO: just do "type: const unit8" and get rid of disposition)
-
-
-
 ### Array Field
 An array field is just a normal fixed size array with elements of a fixed size.
 
 ```yaml
   - name: amounts
     size: amount_size
-    disposition: array
-    type: uint64
+    type: array uint64
 ```
 
 Note that **amount_size** has to be a field in the same struct which appears before the array field. Furthermore, note that **type** can also be a user defined type, but the size of each array element must be the same for all elements, which means that they can not contain arrays of different sizes for example (TODO: ask the core devs about this). Finally note that if the same size field is used for multiple arrays, that the arrays have to be of equal size when serializing/deserializing (TODO: add check and unit test).
 
 
 (TODO: missing check)
-
-
-(TODO: no need for disposition, just do "type: array uint64")
-
 
 (TODO: can size be int instead of variable?)
 
@@ -489,15 +475,10 @@ An 'array fill' is a normal array with fixed sized elements, but where the numbe
 
 ```yaml
   - name: signatures
-    disposition: array fill
-    size: 0
-    type: Signature
+    type: array_fill Signature
 ```
 
 Note that an 'array fill' field has to be the last field in the outermost struct, otherwise it is an error.
-
-
-(TODO: remove size field since it is not needed)
 
 
 (TODO: implement check)

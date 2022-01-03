@@ -223,21 +223,16 @@ class CppClassDeclarationGenerator():
                     if YamlFieldCheckResult.OK != result:
                         return result, result_str
 
-                    # check if const defines a class type/version 
-                    """
-                    NOTE:
-                    If const defines a transaction type, it is saved for later. Will be used for generating type_to_class_xyz() functions later.
-                    This is a hack because the schemas don't yet support assigning an enum type as a class/transaction type yet!
-                    For now each class must have a const field named "TRANSACTION_TYPE" that defines the class type.
-                    """
-                    if "TRANSACTION_TYPE" == field["name"]:
-                        self.group_type = field_type
-                        self.group_id   = field["value"]
-                    elif "TRANSACTION_VERSION" == field["name"]:
-                        self.group_version = field["value"]
-
                     #generate
                     self.__header_code_output += CppFieldGenerator.gen_const_field( field_type, field["name"], field["value"], comments )
+
+                elif( "struct_type" == disposition ):
+                    self.group_type    = field_type
+                    self.group_id      = field["value"].split()[0]
+                    self.group_version = field["value"].split()[1][1:]
+
+                    self.__header_code_output += CppFieldGenerator.gen_const_field( field_type, "TRANSACTION_TYPE",    self.group_id,      comments )
+                    self.__header_code_output += CppFieldGenerator.gen_const_field( "uint8_t", "TRANSACTION_VERSION", self.group_version, comments )
 
                 elif( "inline" == disposition ):
                     # check fields

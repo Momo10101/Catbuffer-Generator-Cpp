@@ -343,14 +343,11 @@
   type: struct
 - comments: binary layout for a non-embedded account key link transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: ACCOUNT_KEY_LINK
+  - type: struct_type TransactionType
+    value: ACCOUNT_KEY_LINK @1
+    header: EntityBody
+    version_field: version
+    type_field: type      
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -359,14 +356,11 @@
   type: struct
 - comments: binary layout for an embedded account key link transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: ACCOUNT_KEY_LINK
+  - type: struct_type TransactionTypeEmbedded
+    value: ACCOUNT_KEY_LINK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -385,14 +379,11 @@
   type: struct
 - comments: binary layout for a non-embedded node key link transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: NODE_KEY_LINK
+  - type: struct_type TransactionType
+    value: NODE_KEY_LINK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -401,14 +392,11 @@
   type: struct
 - comments: binary layout for an embedded node key link transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: NODE_KEY_LINK
+  - type: struct_type TransactionTypeEmbedded
+    value: NODE_KEY_LINK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -465,14 +453,11 @@
   type: struct
 - comments: binary layout for an aggregate complete transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: AGGREGATE_COMPLETE
+  - type: struct_type TransactionType
+    value: AGGREGATE_COMPLETE @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -481,14 +466,11 @@
   type: struct
 - comments: binary layout for an aggregate bonded transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: AGGREGATE_BONDED
+  - type: struct_type TransactionType
+    value: AGGREGATE_BONDED @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -513,14 +495,11 @@
   type: struct
 - comments: binary layout for a non-embedded voting key link transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: VOTING_KEY_LINK
+  - type: struct_type TransactionType
+    value: VOTING_KEY_LINK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -529,14 +508,11 @@
   type: struct
 - comments: binary layout for an embedded voting key link transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: VOTING_KEY_LINK
+  - type: struct_type TransactionTypeEmbedded
+    value: VOTING_KEY_LINK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -555,14 +531,11 @@
   type: struct
 - comments: binary layout for a non-embedded vrf key link transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: VRF_KEY_LINK
+  - type: struct_type TransactionType
+    value: VRF_KEY_LINK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -571,14 +544,11 @@
   type: struct
 - comments: binary layout for an embedded vrf key link transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: VRF_KEY_LINK
+  - type: struct_type TransactionTypeEmbedded
+    value: VRF_KEY_LINK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -600,14 +570,11 @@
   type: struct
 - comments: binary layout for a non-embedded hash lock transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: HASH_LOCK
+  - type: struct_type TransactionType
+    value: HASH_LOCK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -616,14 +583,11 @@
   type: struct
 - comments: binary layout for an embedded hash lock transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: HASH_LOCK
+  - type: struct_type TransactionTypeEmbedded
+    value: HASH_LOCK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -665,14 +629,11 @@
   type: struct
 - comments: binary layout for a non-embedded secret lock transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: SECRET_LOCK
+  - type: struct_type TransactionType
+    value: SECRET_LOCK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -681,14 +642,11 @@
   type: struct
 - comments: binary layout for an embedded secret lock transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: SECRET_LOCK
+  - type: struct_type TransactionTypeEmbedded
+    value: SECRET_LOCK @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -717,14 +675,11 @@
   type: struct
 - comments: binary layout for a non-embedded secret proof transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: SECRET_PROOF
+  - type: struct_type TransactionType
+    value: SECRET_PROOF @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -733,14 +688,11 @@
   type: struct
 - comments: binary layout for an embedded secret proof transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: SECRET_PROOF
+  - type: struct_type TransactionTypeEmbedded
+    value: SECRET_PROOF @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -771,14 +723,11 @@
   type: struct
 - comments: binary layout for a non-embedded account metadata transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: ACCOUNT_METADATA
+  - type: struct_type TransactionType
+    value: ACCOUNT_METADATA @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -787,14 +736,11 @@
   type: struct
 - comments: binary layout for an embedded account metadata transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: ACCOUNT_METADATA
+  - type: struct_type TransactionTypeEmbedded
+    value: ACCOUNT_METADATA @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -828,14 +774,11 @@
   type: struct
 - comments: binary layout for a non-embedded mosaic metadata transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: MOSAIC_METADATA
+  - type: struct_type TransactionType
+    value: MOSAIC_METADATA @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -844,14 +787,11 @@
   type: struct
 - comments: binary layout for an embedded mosaic metadata transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: MOSAIC_METADATA
+  - type: struct_type TransactionTypeEmbedded
+    value: MOSAIC_METADATA @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -909,14 +849,11 @@
   type: struct
 - comments: binary layout for a non-embedded namespace metadata transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: NAMESPACE_METADATA
+  - type: struct_type TransactionType
+    value: NAMESPACE_METADATA @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -925,14 +862,11 @@
   type: struct
 - comments: binary layout for an embedded namespace metadata transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: NAMESPACE_METADATA
+  - type: struct_type TransactionTypeEmbedded
+    value: NAMESPACE_METADATA @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -991,14 +925,11 @@
   type: struct
 - comments: binary layout for a non-embedded mosaic definition transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: MOSAIC_DEFINITION
+  - type: struct_type TransactionType
+    value: MOSAIC_DEFINITION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1007,14 +938,11 @@
   type: struct
 - comments: binary layout for an embedded mosaic definition transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: MOSAIC_DEFINITION
+  - type: struct_type TransactionTypeEmbedded
+    value: MOSAIC_DEFINITION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1036,14 +964,11 @@
   type: struct
 - comments: binary layout for a non-embedded mosaic supply change transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: MOSAIC_SUPPLY_CHANGE
+  - type: struct_type TransactionType
+    value: MOSAIC_SUPPLY_CHANGE @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1052,14 +977,11 @@
   type: struct
 - comments: binary layout for an embedded mosaic supply change transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: MOSAIC_SUPPLY_CHANGE
+  - type: struct_type TransactionTypeEmbedded
+    value: MOSAIC_SUPPLY_CHANGE @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1098,14 +1020,11 @@
   type: struct
 - comments: binary layout for a non-embedded multisig account modification transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: MULTISIG_ACCOUNT_MODIFICATION
+  - type: struct_type TransactionType
+    value: MULTISIG_ACCOUNT_MODIFICATION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1114,14 +1033,11 @@
   type: struct
 - comments: binary layout for an embedded multisig account modification transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: MULTISIG_ACCOUNT_MODIFICATION
+  - type: struct_type TransactionTypeEmbedded
+    value: MULTISIG_ACCOUNT_MODIFICATION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1143,14 +1059,11 @@
   type: struct
 - comments: binary layout for a non-embedded address alias transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: ADDRESS_ALIAS
+  - type: struct_type TransactionType
+    value: ADDRESS_ALIAS @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1159,14 +1072,11 @@
   type: struct
 - comments: binary layout for an embedded address alias transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: ADDRESS_ALIAS
+  - type: struct_type TransactionTypeEmbedded
+    value: ADDRESS_ALIAS @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1188,14 +1098,11 @@
   type: struct
 - comments: binary layout for a non-embedded mosaic alias transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: MOSAIC_ALIAS
+  - type: struct_type TransactionType
+    value: MOSAIC_ALIAS @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1204,14 +1111,11 @@
   type: struct
 - comments: binary layout for an embedded mosaic alias transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: MOSAIC_ALIAS
+  - type: struct_type TransactionTypeEmbedded
+    value: MOSAIC_ALIAS @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1249,14 +1153,11 @@
   type: struct
 - comments: binary layout for a non-embedded namespace registration transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: NAMESPACE_REGISTRATION
+  - type: struct_type TransactionType
+    value: NAMESPACE_REGISTRATION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1265,14 +1166,11 @@
   type: struct
 - comments: binary layout for an embedded namespace registration transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: NAMESPACE_REGISTRATION
+  - type: struct_type TransactionTypeEmbedded
+    value: NAMESPACE_REGISTRATION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1325,14 +1223,11 @@
   type: struct
 - comments: binary layout for a non-embedded account address restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: ACCOUNT_ADDRESS_RESTRICTION
+  - type: struct_type TransactionType
+    value: ACCOUNT_ADDRESS_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1341,14 +1236,11 @@
   type: struct
 - comments: binary layout for an embedded account address restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: ACCOUNT_ADDRESS_RESTRICTION
+  - type: struct_type TransactionTypeEmbedded
+    value: ACCOUNT_ADDRESS_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1382,14 +1274,11 @@
   type: struct
 - comments: binary layout for a non-embedded account mosaic restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: ACCOUNT_MOSAIC_RESTRICTION
+  - type: struct_type TransactionType
+    value: ACCOUNT_MOSAIC_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1398,14 +1287,11 @@
   type: struct
 - comments: binary layout for an embedded account mosaic restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: ACCOUNT_MOSAIC_RESTRICTION
+  - type: struct_type TransactionTypeEmbedded
+    value: ACCOUNT_MOSAIC_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1439,14 +1325,11 @@
   type: struct
 - comments: binary layout for a non-embedded account operation restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: ACCOUNT_OPERATION_RESTRICTION
+  - type: struct_type TransactionType
+    value: ACCOUNT_OPERATION_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1455,14 +1338,11 @@
   type: struct
 - comments: binary layout for an embedded account operation restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: ACCOUNT_OPERATION_RESTRICTION
+  - type: struct_type TransactionTypeEmbedded
+    value: ACCOUNT_OPERATION_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1490,14 +1370,11 @@
   type: struct
 - comments: binary layout for a non-embedded mosaic address restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: MOSAIC_ADDRESS_RESTRICTION
+  - type: struct_type TransactionType
+    value: MOSAIC_ADDRESS_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1506,14 +1383,11 @@
   type: struct
 - comments: binary layout for an embedded mosaic address restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: MOSAIC_ADDRESS_RESTRICTION
+  - type: struct_type TransactionTypeEmbedded
+    value: MOSAIC_ADDRESS_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1575,14 +1449,11 @@
   type: struct
 - comments: binary layout for a non-embedded mosaic global restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: MOSAIC_GLOBAL_RESTRICTION
+  - type: struct_type TransactionType
+    value: MOSAIC_GLOBAL_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1591,14 +1462,11 @@
   type: struct
 - comments: binary layout for an embedded mosaic global restriction transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: MOSAIC_GLOBAL_RESTRICTION
+  - type: struct_type TransactionTypeEmbedded
+    value: MOSAIC_GLOBAL_RESTRICTION @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''
@@ -1638,14 +1506,11 @@
   type: struct
 - comments: binary layout for a non-embedded transfer transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionType
-    value: TRANSFER
+  - type: struct_type TransactionType
+    value: TRANSFER @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline Transaction
   - comments: ''
@@ -1654,14 +1519,11 @@
   type: struct
 - comments: binary layout for an embedded transfer transaction
   layout:
-  - comments: ''
-    name: TRANSACTION_VERSION
-    type: const uint8
-    value: 1
-  - comments: ''
-    name: TRANSACTION_TYPE
-    type: const TransactionTypeEmbedded
-    value: TRANSFER
+  - type: struct_type TransactionTypeEmbedded
+    value: TRANSFER @1
+    header: EntityBody
+    version_field: version
+    type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
   - comments: ''

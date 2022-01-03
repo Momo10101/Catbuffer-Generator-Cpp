@@ -103,7 +103,10 @@ class CppClassDefinitionGenerator():
 
                 if "const" == disposition:
                     continue # const fields dont need serialization/deserialization
-                
+
+                elif( "struct_type" == disposition ):
+                    continue
+
                 elif "array" == disposition:
                     self.__deserializer.array_field( var_type, name, size )
                     self.__serializer.array_field( var_type, name )
