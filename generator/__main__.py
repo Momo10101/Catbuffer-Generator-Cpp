@@ -98,7 +98,8 @@ def main():
     class_decls : typing.Dict[str, CppClassDeclarationGenerator] = {}
     types_generator = CppTypesGenerator()
     for elem in data_loaded:
-        if 'enum' == elem['type']: 
+        elem_type = elem['type'].split()
+        if 'enum' == elem_type[0]: 
             types_generator.add_enum_type( elem )
             print("\t"+elem["name"])
         elif 'struct' == elem['type']:
@@ -107,8 +108,9 @@ def main():
     # Generate alias types
     print("\nGenerating alias types:")
     for elem in data_loaded:
-        if 'byte' == elem['type']:
-            types_generator.add_alias( elem )
+        elem_type = elem['type'].split()
+        if 'alias' == elem_type[0]:
+            types_generator.add_alias_type( elem )
             print("\t"+elem["name"])
 
     types_generator.write_file(gen_output_folder+"/types.h")

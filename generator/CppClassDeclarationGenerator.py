@@ -2,7 +2,7 @@ import typing
 
 from .YamlFieldChecker      import YamlFieldChecker, YamlFieldCheckResult
 from .YamlDependencyChecker import YamlDependencyChecker, YamlDependencyCheckerResult
-from .CppFieldGenerator     import CppFieldGenerator, ByteToTypeConverter
+from .CppFieldGenerator     import CppFieldGenerator, TypeConverter
 from .CppTypesGenerator     import CppTypesGenerator
 
 
@@ -196,12 +196,17 @@ class CppClassDeclarationGenerator():
             if result != YamlFieldCheckResult.OK:
                 return result, result_str
 
+            field_type = TypeConverter.convert(field["type"])
+            field["type"] = field_type
+
+            if field_type not in CppFieldGenerator.builtin_types and \
+               field_type not in self.__name_to_enum and \
+               field_type not in self.__name_to_alias and \
+               field_type not in self.__name_to_class:
+                return YamlFieldCheckResult.TYPE_UNKNOWN, f"\n\nError: Type '{field_type}' in struct '{self.class_name}' not defined!\n\n"
+                
             if( "disposition" in field ):
                 disposition = field["disposition"]
-
-                #TODO: refactor this when disposition is removed
-                field_type = ByteToTypeConverter.get_disposition_type( field ) 
-                field["type"] = field_type  
 
                 if( "const" == disposition ):
                     # check fields
@@ -281,15 +286,6 @@ class CppClassDeclarationGenerator():
                     return YamlFieldCheckResult.DISPOSITION_INVALID, f"\n\nERROR: Invalid disposition '{disposition}' in struct '{self.class_name}'!\n\n"
 
             else:
-                field_type = ByteToTypeConverter.get_field_type( field )
-                field["type"] = field_type
-
-                if field_type not in CppFieldGenerator.builtin_types and \
-                   field_type not in self.__name_to_enum and \
-                   field_type not in self.__name_to_alias and \
-                   field_type not in self.__name_to_class:
-                    return YamlFieldCheckResult.TYPE_UNKNOWN, f"\n\nError: Type '{field_type}' in struct '{self.class_name}' not defined'!\n\n"
-
                 if "condition" in field: # generate condition field
                     cond_var = field["condition"]
 

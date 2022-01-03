@@ -1,47 +1,15 @@
 
 
-#NOTE: this should disappear when using explicit types
-class ByteToTypeConverter():
+class TypeConverter():
 
     @staticmethod
-    def size_to_type( size: int, signedness: str ) -> str:
+    def convert( type: str ) -> str:
+        yaml_types = {'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'}
 
-        size_to_type = { 1: 'int8_t', 2: 'int16_t', 4: 'int32_t', 8: 'int64_t' }
-
-        if size in size_to_type:
-            type = size_to_type[size]
-            return type if signedness == 'signed' else 'u' + type
+        if type in yaml_types:
+            return type+"_t"
         else:
-            return "byte"
-
-    @staticmethod
-    def get_field_type( field: dict ) -> str:
-
-        type = field["type"]
-
-        if( "byte" == type ):
-            type_size  = field["size"]
-            signedness = field["signedness"]
-            type       = ByteToTypeConverter.size_to_type(type_size, signedness)
-
-        return type
-
-    @staticmethod
-    def get_array_type( field: dict ):
-
-        type = field["type"]
-
-        if( "byte" == type ):
-            type_size  = field["element_disposition"]["size"]
-            signedness = field["element_disposition"]["signedness"]
-            type       = ByteToTypeConverter.size_to_type(type_size, signedness)
-
-        return type
-
-    @staticmethod
-    def get_disposition_type( field: dict ):
-        return ByteToTypeConverter.get_array_type(field) if field["disposition"] == "array" else ByteToTypeConverter.get_field_type(field)
-
+            return type
 
 
 

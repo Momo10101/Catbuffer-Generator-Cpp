@@ -1,7 +1,7 @@
 import typing
 from dataclasses import dataclass
 
-from .CppFieldGenerator import ByteToTypeConverter
+from .CppFieldGenerator import TypeConverter
 
 
 @dataclass
@@ -48,9 +48,7 @@ class CppTypesGenerator():
                 ---------------------------------------------------------
                 - name: TransactionType
                   comments: enumeration of transaction types
-                  signedness: unsigned
-                  size: 2
-                  type: enum #TODO: this should change to "enum uint16" and the two above fields removed
+                  type: enum uint16
                   values:
                   - comments: account key link transaction
                       name: ACCOUNT_KEY_LINK
@@ -79,11 +77,11 @@ class CppTypesGenerator():
         """
 
         enum_name = enum["name"]
+        enum_type = TypeConverter.convert( enum["type"].split()[1] )
 
         if enum_name in self.name_to_enum:
             print(f"Error: Same enum name, '{enum_name}', defined multiple times!\n")
 
-        enum_type = ByteToTypeConverter.size_to_type( enum["size"], enum["signedness"] )
         self.name_to_enum[enum_name] = EnumDef( enum_type, set() )
 
         if "comments" in enum:
@@ -92,7 +90,7 @@ class CppTypesGenerator():
         self.enums_code_output += f'enum class {enum_name} : {enum_type}\n{{\n'
 
         for value in enum["values"]:
-            self.enums_code_output += f'\t{value["name"]} = {value["value"]},' 
+            self.enums_code_output += f'\t{value["name"]} = {value["value"]},'
             self.enums_code_output += f'//< {value["comments"]}\n' if "comments" in value else "\n"
             self.name_to_enum[enum_name].values.add(value["name"])
 
@@ -100,7 +98,7 @@ class CppTypesGenerator():
 
 
 
-    def add_alias( self, user_type: dict ) -> None:
+    def add_alias_type( self, alias: dict ) -> None:
         """
         Takes a dict that defines an alias type and converts it to cpp code. 
         This method can be called as many times as necessary to add
@@ -115,9 +113,8 @@ class CppTypesGenerator():
                 ---------------------------------------------------------
                 - name: Hash256
                   comments: 'A type to store 256bit hashes'
-                  signedness: unsigned
                   size: 32
-                  type: byte #TODO: this should change to "array uint8_t"
+                  type: alias array uint8_t
                 ---------------------------------------------------------
 
             An example C++ generated code for the above is shown below:
@@ -127,23 +124,24 @@ class CppTypesGenerator():
                 ---------------------------------------------------------
         """        
 
-        type_name = user_type["name"]
+        alias_name = alias["name"]
 
-        if type_name in self.name_to_alias:
-            print(f"Error: Same type name, '{type_name}', defined multiple times!\n")
+        if alias_name in self.name_to_alias:
+            print(f"Error: Same type name, '{alias_name}', defined multiple times!\n")
 
+        alias_types = alias["type"].split()
 
-        coverted_type = ByteToTypeConverter.size_to_type( user_type["size"], user_type["signedness"] )
-
-        if("byte" != coverted_type):
-            self.types_code_output += f'using {type_name} = {coverted_type};' 
-            self.name_to_alias[type_name] = AliasDef( coverted_type , 1 )
+        if( alias_types[1] != "array"):
+            alias_type = TypeConverter.convert( alias_types[1] )
+            self.types_code_output += f'using {alias_name} = {alias_type};'
+            self.name_to_alias[alias_name] = AliasDef( alias_type , 1 )
         else:
-            print_hint = user_type["print"] if "print" in user_type else ""
-            self.types_code_output += f'using {type_name} = struct {type_name}_t {{ uint8_t data[{user_type["size"]}]; }};' 
-            self.name_to_alias[type_name] = AliasDef( coverted_type , user_type["size"], print_hint  )
+            alias_type = TypeConverter.convert( alias_types[2] )
+            print_hint = alias["print"] if "print" in alias else ""
+            self.types_code_output += f'using {alias_name} = struct {alias_name} {{ {alias_type} data[{alias["size"]}]; }};' 
+            self.name_to_alias[alias_name] = AliasDef( alias_type, alias["size"], print_hint  )
 
-        self.types_code_output += f'//< {user_type["comments"]}\n' if "comments" in user_type else "\n"
+        self.types_code_output += f'//< {alias["comments"]}\n' if "comments" in alias else "\n"
 
 
 
