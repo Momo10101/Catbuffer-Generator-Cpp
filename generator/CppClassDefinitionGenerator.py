@@ -123,7 +123,7 @@ class CppClassDefinitionGenerator():
                     self.__size_generator.reserved_field( var_type, name )
                     self.__print_generator.reserved_field( var_type, name, reserved_value)
 
-                elif "array sized" == disposition:
+                elif "array_sized" == disposition:
                     header_type       = field["header"]
                     header_type_field = field["header_type_field"]
                     enum_type         = self.__get_var_type( header_type_field, header_type )
@@ -135,7 +135,7 @@ class CppClassDefinitionGenerator():
 
                     self.__includes.add(f'#include "converters.h"')
 
-                elif "array fill" == disposition: #TODO: check that only added once and at the end!!
+                elif "array_fill" == disposition: #TODO: check that only added once and at the end!!
                     self.__deserializer.array_fill_field( var_type, name )
                     self.__serializer.array_fill_field( var_type, name )
                     self.__size_generator.array_fill_field( var_type, name )

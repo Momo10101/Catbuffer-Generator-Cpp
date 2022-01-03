@@ -98,7 +98,7 @@ class CppClassDeclarationGenerator():
         for field in self.__dependency_checks:
             disposition = field["disposition"]
 
-            if "array sized" == disposition:
+            if "array_sized" == disposition:
                 result, result_str = YamlDependencyChecker.array_sized( self.class_name, field, self.__name_to_class )
                 if YamlDependencyCheckerResult.OK != result:
                     return result, result_str
@@ -149,13 +149,14 @@ class CppClassDeclarationGenerator():
 
         for field in self.fields:
 
-            if( "disposition" not in field ):
+            if "type" not in field:
                 continue
 
-            if( "array" != field["disposition"] ):
+            type = field["type"].split()
+            if "array" != type[0]:
                 continue
 
-            if( "size" not in field or "name" not in field):
+            if( "size" not in field or "name" not in field ):
                 continue
 
             size_var   = field["size"]
@@ -196,7 +197,15 @@ class CppClassDeclarationGenerator():
             if result != YamlFieldCheckResult.OK:
                 return result, result_str
 
-            field_type = TypeConverter.convert(field["type"])
+
+            types = field["type"].split()
+            
+            if len(types) > 1:
+                field["disposition"] = types[0]
+                field_type           = TypeConverter.convert(types[1])
+            else:
+                field_type  = TypeConverter.convert(types[0])
+
             field["type"] = field_type
 
             if field_type not in CppFieldGenerator.builtin_types and \
@@ -205,9 +214,9 @@ class CppClassDeclarationGenerator():
                field_type not in self.__name_to_class:
                 return YamlFieldCheckResult.TYPE_UNKNOWN, f"\n\nError: Type '{field_type}' in struct '{self.class_name}' not defined!\n\n"
                 
-            if( "disposition" in field ):
-                disposition = field["disposition"]
+            if "disposition" in field:
 
+                disposition = field["disposition"]
                 if( "const" == disposition ):
                     # check fields
                     result, result_str = YamlFieldChecker.const( self.class_name, field, self.__name_to_enum )
@@ -258,7 +267,7 @@ class CppClassDeclarationGenerator():
                     self.__header_code_output += CppFieldGenerator.gen_array_field( field_type, field["name"], comments )
                     self.__lib_includes.add("#include <vector>")
 
-                elif( "array sized" == disposition ):
+                elif( "array_sized" == disposition ):
                     # check fields
                     result, result_str = YamlFieldChecker.array_sized(self.class_name, field)
                     if YamlFieldCheckResult.OK != result:
@@ -272,7 +281,7 @@ class CppClassDeclarationGenerator():
                     self.__lib_includes.add("#include <vector>")
                     self.__lib_includes.add("#include <memory>")
 
-                elif( "array fill" == disposition ):
+                elif( "array_fill" == disposition ):
                     # check fields
                     result, result_str = YamlFieldChecker.array_fill(self.class_name, field, self.__name_to_class)
                     if YamlFieldCheckResult.OK != result:
