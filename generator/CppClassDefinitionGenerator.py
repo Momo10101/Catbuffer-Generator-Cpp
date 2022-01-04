@@ -127,12 +127,13 @@ class CppClassDefinitionGenerator():
                     self.__print_generator.reserved_field( var_type, name, reserved_value)
 
                 elif "array_sized" == disposition:
-                    header_type       = field["header"]
+                    header_type       = field["type"]
                     header_type_field = field["header_type_field"]
                     enum_type         = self.__get_var_type( header_type_field, header_type )
+                    align             = field["align"] if "align" in field else ""
 
-                    self.__deserializer.array_sized_field( name, size, header_type, header_type_field, enum_type )
-                    self.__serializer.array_sized_field( name )
+                    self.__deserializer.array_sized_field( name, size, header_type, header_type_field, enum_type, align )
+                    self.__serializer.array_sized_field( name, align )
                     self.__size_generator.array_sized_field( name, size )
                     self.__print_generator.array_sized_field( header_type, name, size )
 

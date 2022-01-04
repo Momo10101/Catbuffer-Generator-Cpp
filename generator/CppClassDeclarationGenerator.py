@@ -212,7 +212,7 @@ class CppClassDeclarationGenerator():
                field_type not in self.__name_to_enum and \
                field_type not in self.__name_to_alias and \
                field_type not in self.__name_to_class:
-                return YamlFieldCheckResult.TYPE_UNKNOWN, f"\n\nError: Type '{field_type}' in struct '{self.class_name}' not defined!\n\n"
+                return YamlFieldCheckResult.TYPE_UNKNOWN, f"\n\nError: Type '{field_type}' in struct '{self.class_name}' not defined or incomplete!\n\n"
                 
             if "disposition" in field:
 

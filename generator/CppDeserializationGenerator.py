@@ -76,7 +76,7 @@ class CppDeserializationGenerator():
 
     def array_sized_field( self, array_name:  str, array_size:        str, 
                                  header_type: str, header_type_field: str, 
-                                 enum_type:   str ):
+                                 enum_type:   str, align:             str = "" ):
 
         array_name        = CppFieldGenerator.convert_to_field_name( array_name )
         array_size        = CppFieldGenerator.convert_to_field_name( array_size )
@@ -99,10 +99,11 @@ class CppDeserializationGenerator():
         self.__code_output += f'\t\tread_size += (rsize-buffer.RemainingSize());\n'
         self.__code_output += f'\t\t{ array_name }.push_back( std::move(catbuf) );\n\n'
 
-        self.__code_output += "\t\t// Read optional padding\n"
-        self.__code_output += f'\t\tconst size_t padding = (8 - uintptr_t(buffer.GetOffsetPtr())%8) % 8;\n' #TODO: Add support for defining padding in yaml 
-        self.__code_output += f'\t\tsucc = buffer.MoveOffset(padding); if(!succ){{ return false; }}\n'
-        self.__code_output += f'\t\tread_size += padding;\n'
+        if align:
+            self.__code_output += "\t\t// Read optional padding\n"
+            self.__code_output += f'\t\tconst size_t padding = ({align} - uintptr_t(buffer.GetOffsetPtr())%{align}) % {align};\n'
+            self.__code_output += f'\t\tsucc = buffer.MoveOffset(padding); if(!succ){{ return false; }}\n'
+            self.__code_output += f'\t\tread_size += padding;\n'
         self.__code_output += f'\t}}\n\n'
 
         self.__add_succ_var = True

@@ -73,16 +73,17 @@ class CppSerializationGenerator():
 
 
 
-    def array_sized_field( self, array_name: str ):
+    def array_sized_field( self, array_name: str, align: str = "" ):
         array_name = CppFieldGenerator.convert_to_field_name(array_name)
 
         self.__code_output += f'\n\tfor( const std::unique_ptr<ICatbuffer>& catbuf : {array_name} )\n\t{{\n\t\t'
         self.__code_output += f'succ = catbuf->Serialize( buffer ); if(!succ){{ return false; }}\n\t\t'
-        self.__code_output += f'size_t padding = ( 8 - uintptr_t(buffer.GetOffsetPtr())%8 ) % 8;\n\t\t'
 
-        self.__code_output += f'for( size_t i=0; i<padding; ++i )\n\t\t{{\n'
-        self.__code_output += f'\t\t\tptr = buffer.GetOffsetPtrAndMove(1); if(!ptr){{ return false; }}\n'
-        self.__code_output += f'\t\t\t*( (uint8_t*) ptr ) = 0;\n\t\t}}\n\t}}\n\n'
+        if align:
+            self.__code_output += f'size_t padding = ( {align} - uintptr_t(buffer.GetOffsetPtr())%{align} ) % {align};\n\t\t'
+            self.__code_output += f'for( size_t i=0; i<padding; ++i )\n\t\t{{\n'
+            self.__code_output += f'\t\t\tptr = buffer.GetOffsetPtrAndMove(1); if(!ptr){{ return false; }}\n'
+            self.__code_output += f'\t\t\t*( (uint8_t*) ptr ) = 0;\n\t\t}}\n\t}}\n\n'
 
         self.__add_ptr_var = True
 

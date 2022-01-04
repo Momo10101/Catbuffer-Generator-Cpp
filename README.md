@@ -422,51 +422,39 @@ Note that **amount_size** has to be a field in the same struct which appears bef
 
 ### Array Sized Field
 
-An array sized field is an array where the number of elements is not known, but where the total array size in bytes is known. This is useful for arrays where each element is of a different type and size. The array elements in this case are of user defined custom types, however, all elements must share a common header field, which in turn contains a field which indicates what the element type is. The header type is indicated with the **header** key and the field within the header, containing the element type, is indicated with the **header_type_field** key. An example of this is shown below:
+An **array_sized** field is an array where the number of elements is not known, but where the total array size in bytes is known. This is useful for arrays where each element is of a different type and size. The array elements in this case are of user defined custom types, however, all elements must share a common header field, which in turn contains a field which indicates what the element type is. The header type is indicated with the **header** key and the field within the header, containing the element type, is indicated with the **header_type_field** key. An example of this is shown below:
 
 ```yaml
   - name: transactions
-    disposition: array sized
     size: payload_size
-    header: EmbeddedTransaction
-    header_type_field: elem_type
+    header: array_sized EmbeddedTransaction #<--- Header common to all elements in array.
+    header_type_field: elem_type            #<--- Name of field in 'EmbeddedTransaction' which contains type of element.
+    align: 8                                #<--- Optional alignment of array elements in bytes.
 ```
 
-In the above example the total size of the array in bytes is given in the **size** key. '**EmbeddedTransaction**' is the header which is common to all elements in the '**transactions**' array. The field in the '**EmbeddedTransaction**' which indicates the type of an element is called '**elem_type**'. The type of the '**elem_type**' field itself has to be an enum.  
+In the above example the total size of the array in bytes is given in the **size** key. '**EmbeddedTransaction**' is the header which is common to all elements in the '**transactions**' array. The field in the '**EmbeddedTransaction**' which indicates the type of an element is called '**elem_type**'. The type of the '**elem_type**' field itself has to be an enum. An optional alignment for the array elements can be indicated by specifying an **align** field. This will add padding at the end of each array element so that the subsequent element is memory aligned. If alignment is specified then the **size** field must includes the size of the paddings.
 
-Given an array sized field, Catbuffer will automagically know how to serialize and deserialize. For this to happen, the elements in the array also need to be defined with a specific const called **TRANSACTION_TYPE** with an enum type as shown below: 
+Given an **array_sized** field, Catbuffer will automagically know how to serialize and deserialize. For this to happen, the elements in the array also need to be defined with a specific field called **struct_type** as shown below: 
 
 ```yaml
-  - name: TRANSACTION_TYPE
-    type: TransactionType     # Enum defined somewhere else.
-    value: MOSAIC_DEFINITION  # Enumerator in TransactionType.
-    disposition: const
+  - type: struct_type TransactionType  #<---'TransactionType' is an Enum defined somewhere else.
+    value: MOSAIC_DEFINITION @3        #<--- MOSAIC_DEFINITION is an Enumerator in 'TransactionType', and '@3' is the version.
+    header: EntityBody                 #<--- header where version and type of struct is stored.
+    version_field: version             #<--- the name of the field within the header defining the version.
+    type_field: type                   #<--- the name of the field within the header defining the type.
 ```
 
-**MOSAIC_DEFINITION** in this case is an enumerator in the **TransactionType** enum, which also has to be the type of the **elem_type** field mentioned above. Besides the **TRANSACTION_TYPE** constant a **TRANSACTION_VERSION** constant also has to be defined like so:
-
-```yaml
-  - name: TRANSACTION_VERSION
-    type: uint8
-    value: 3
-    disposition: const
-```
-
-In this way Catbuffer can support evolving structures over time.
+**MOSAIC_DEFINITION** is an enumerator in the **TransactionType** enum, which also has to be the type of the **elem_type** field mentioned above. This enum gives the type of the struct within the group **TransactionType**. The **@3** part indicates the version of the struct. This way Catbuffer can support evolving structures over time.
 
 
+( TODO: header, version_field and type_field should not be defined here since its the same for all structs of type TransactionType )
 
-( TODO: const should not be used for assigning types and versions )
 
 ( TODO: what should happen if a version and type combination does not exist? )
-
-( TODO: the type and version of a struct is hardcoded to EntityBody.type/version. We should generalize that! )
 
 
 ( TODO: We need to think about this a bit more. What if there are two fields of type EmbeddedTransaction? What if its not inline? )
 
-
-( TODO: change "disposition" key to "type" )
 
 
 ### Array Fill Field

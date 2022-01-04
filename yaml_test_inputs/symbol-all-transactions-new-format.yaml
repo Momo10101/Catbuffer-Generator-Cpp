@@ -444,8 +444,8 @@
     name: transactions
     size: payload_size
     type: array_sized EmbeddedTransaction
-    header: EmbeddedTransaction
     header_type_field: type
+    align: 8
   - comments: cosignatures data (fills remaining body space after transactions)
     name: cosignatures
     type: array_fill Cosignature

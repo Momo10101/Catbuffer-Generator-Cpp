@@ -13,7 +13,7 @@ class YamlDependencyChecker():
     @staticmethod
     def array_sized( class_name, field: dict, class_decl: dict ) -> typing.Tuple[ YamlDependencyCheckerResult, str ]:
 
-        header = field["header"]
+        header = field["type"]
         if header not in class_decl:
             return YamlDependencyCheckerResult.ARRAY_SIZED_HEADER_NOT_DECLARED, f"\n\nError: The header '{header}' in array_sized '{field['name']}' not declared (error detected for array_sized field '{field['name']}' in struct '{class_name}')!\n\n"
 

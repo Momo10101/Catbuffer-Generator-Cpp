@@ -36,7 +36,7 @@ class TestYamlFieldErrorDetection( unittest.TestCase ):
 
 
     def test_missing_name_is_detected(self):
-        fields = [{ 'type': 'byte', 'size': 1, 'signedness': 'signed' }]
+        fields = [{ 'type': 'uint8' }]
 
         self.check( fields, YamlFieldCheckResult.NAME_MISSING )
 
@@ -255,23 +255,19 @@ class TestYamlFieldErrorDetection( unittest.TestCase ):
     # /////////////////////////////////////////////////////////////////
     def test_array_sized_missing_header_detected(self):
         fields = [{ 'name'             : 'transactions',
-                    'disposition'      : 'array sized',
                     'size'             : 'payload_size',
-                    'type'             : 'EmbeddedTransaction',
-                    #'header'           : 'EmbeddedTransaction',
+                    'type'             : 'array_sized', # missing header after 'array_sized'
                     'header_type_field': 'elem_type' 
                   }]
 
-        self.check( fields, YamlFieldCheckResult.ARRAY_SIZED_HEADER_MISSING )
+        self.check( fields, YamlFieldCheckResult.TYPE_UNKNOWN )
 
 
-    def test_array_sized_missing_header_type_detected(self):
+    def test_array_sized_missing_header_type_field_detected(self):
         fields = [{ 'name'             : 'transactions',
-                    'disposition'      : 'array sized',
                     'size'             : 'payload_size',
-                    'type'             : 'EmbeddedTransaction',
-                    'header'           : 'EmbeddedTransaction',
-                    #'header_type_field': 'elem_type' 
+                    'type'             : 'array_sized DummyClass',
+                   #'header_type_field': 'elem_type' 
                  }]
 
         self.check( fields, YamlFieldCheckResult.ARRAY_SIZED_HEADER_TYPE_MISSING )
@@ -279,10 +275,8 @@ class TestYamlFieldErrorDetection( unittest.TestCase ):
 
     def test_array_sized_missing_size(self):
         fields = [{ 'name'             : 'transactions',
-                    'disposition'      : 'array sized',
-                    #'size'             : 'payload_size',
-                    'type'             : 'EmbeddedTransaction',
-                    'header'           : 'EmbeddedTransaction',
+                   #'size'             : 'payload_size',
+                    'type'             : 'array_sized DummyClass',
                     'header_type_field': 'elem_type' 
                  }]
 

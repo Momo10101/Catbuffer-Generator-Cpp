@@ -163,10 +163,6 @@ class YamlFieldChecker():
         if 'type' not in field:
             return YamlFieldCheckResult.TYPE_MISSING, f"\n\nError: Missing 'type' key for field {field['name']} in struct '{class_name}'!\n\n"
 
-        #TODO: note that header will be merged with type. Remove this check once that is done
-        if "header" not in field:
-            return YamlFieldCheckResult.ARRAY_SIZED_HEADER_MISSING, f"\n\nError: array_sized '{field['name']}' missing 'header' key in struct '{class_name}'!\n\n"
-
         if "header_type_field" not in field:
             return YamlFieldCheckResult.ARRAY_SIZED_HEADER_TYPE_MISSING, f"\n\nError: array_sized '{field['name']}' missing 'header_type_field' key in struct '{class_name}'!\n\n"
 
