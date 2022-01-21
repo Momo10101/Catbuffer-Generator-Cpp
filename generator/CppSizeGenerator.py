@@ -65,10 +65,10 @@ class CppSizeGenerator():
         name   = var_name
         if union_name:
             union_name = CppFieldGenerator.convert_to_field_name(union_name)
-            output = f'\tsize += sizeof({union_name});\n'
+            self.__code_output += f'\tsize += sizeof({union_name});\n'
         else:
             self.__code_output += f'\n\tif( {condition} )\n\t{{\n\t'
-            self.__code_output += self.normal_field( var_type, name )
+            self.normal_field( var_type, name )
 
         if not union_name:
            self.__code_output += "\t}\n\n"

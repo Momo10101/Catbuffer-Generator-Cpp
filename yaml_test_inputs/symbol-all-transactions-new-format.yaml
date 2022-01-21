@@ -123,6 +123,7 @@
     type: Signature
   name: VerifiableEntity
   type: struct
+
 - comments: binary layout for a blockchain entity (block or transaction)
   layout:
   - comments: entity signer's public key
@@ -309,6 +310,7 @@
     type: Timestamp
   name: Transaction
   type: struct
+
 - comments: binary layout for an embedded transaction header
   layout:
   - comments: ''
@@ -320,6 +322,7 @@
     value: 0
   name: EmbeddedTransactionHeader
   type: struct
+
 - comments: binary layout for an embedded transaction
   layout:
   - comments: ''
@@ -331,6 +334,7 @@
     type: TransactionTypeEmbedded
   name: EmbeddedTransaction
   type: struct
+
 - comments: binary layout for an account key link transaction
   layout:
   - comments: linked public key
@@ -345,8 +349,8 @@
   layout:
   - type: struct_type TransactionType
     value: ACCOUNT_KEY_LINK @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type      
   - comments: ''
     type: inline Transaction
@@ -358,8 +362,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: ACCOUNT_KEY_LINK @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -381,8 +385,8 @@
   layout:
   - type: struct_type TransactionType
     value: NODE_KEY_LINK @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -394,8 +398,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: NODE_KEY_LINK @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -445,6 +449,7 @@
     size: payload_size
     type: array_sized EmbeddedTransaction
     header_type_field: type
+    header_version_field: EntityBody.mVersion
     align: 8
   - comments: cosignatures data (fills remaining body space after transactions)
     name: cosignatures
@@ -455,8 +460,8 @@
   layout:
   - type: struct_type TransactionType
     value: AGGREGATE_COMPLETE @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -468,8 +473,8 @@
   layout:
   - type: struct_type TransactionType
     value: AGGREGATE_BONDED @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -497,8 +502,8 @@
   layout:
   - type: struct_type TransactionType
     value: VOTING_KEY_LINK @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -510,8 +515,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: VOTING_KEY_LINK @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -533,8 +538,8 @@
   layout:
   - type: struct_type TransactionType
     value: VRF_KEY_LINK @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -546,8 +551,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: VRF_KEY_LINK @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -572,8 +577,8 @@
   layout:
   - type: struct_type TransactionType
     value: HASH_LOCK @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -585,8 +590,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: HASH_LOCK @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -631,8 +636,8 @@
   layout:
   - type: struct_type TransactionType
     value: SECRET_LOCK @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -644,8 +649,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: SECRET_LOCK @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -677,8 +682,8 @@
   layout:
   - type: struct_type TransactionType
     value: SECRET_PROOF @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -690,8 +695,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: SECRET_PROOF @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -725,8 +730,8 @@
   layout:
   - type: struct_type TransactionType
     value: ACCOUNT_METADATA @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -738,8 +743,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: ACCOUNT_METADATA @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -772,12 +777,13 @@
     type: array uint8
   name: MosaicMetadataTransactionBody
   type: struct
+
 - comments: binary layout for a non-embedded mosaic metadata transaction
   layout:
   - type: struct_type TransactionType
     value: MOSAIC_METADATA @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -785,12 +791,13 @@
     type: inline MosaicMetadataTransactionBody
   name: MosaicMetadataTransaction
   type: struct
+
 - comments: binary layout for an embedded mosaic metadata transaction
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: MOSAIC_METADATA @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -851,8 +858,8 @@
   layout:
   - type: struct_type TransactionType
     value: NAMESPACE_METADATA @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -864,8 +871,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: NAMESPACE_METADATA @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -923,12 +930,13 @@
     type: uint8
   name: MosaicDefinitionTransactionBody
   type: struct
+
 - comments: binary layout for a non-embedded mosaic definition transaction
   layout:
   - type: struct_type TransactionType
     value: MOSAIC_DEFINITION @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -936,12 +944,13 @@
     type: inline MosaicDefinitionTransactionBody
   name: MosaicDefinitionTransaction
   type: struct
+
 - comments: binary layout for an embedded mosaic definition transaction
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: MOSAIC_DEFINITION @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -949,6 +958,7 @@
     type: inline MosaicDefinitionTransactionBody
   name: EmbeddedMosaicDefinitionTransaction
   type: struct
+
 - comments: binary layout for a mosaic supply change transaction
   layout:
   - comments: affected mosaic identifier
@@ -966,8 +976,8 @@
   layout:
   - type: struct_type TransactionType
     value: MOSAIC_SUPPLY_CHANGE @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -979,8 +989,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: MOSAIC_SUPPLY_CHANGE @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1022,8 +1032,8 @@
   layout:
   - type: struct_type TransactionType
     value: MULTISIG_ACCOUNT_MODIFICATION @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1035,8 +1045,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: MULTISIG_ACCOUNT_MODIFICATION @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1061,8 +1071,8 @@
   layout:
   - type: struct_type TransactionType
     value: ADDRESS_ALIAS @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1074,8 +1084,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: ADDRESS_ALIAS @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1100,8 +1110,8 @@
   layout:
   - type: struct_type TransactionType
     value: MOSAIC_ALIAS @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1113,8 +1123,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: MOSAIC_ALIAS @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1155,8 +1165,8 @@
   layout:
   - type: struct_type TransactionType
     value: NAMESPACE_REGISTRATION @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1168,8 +1178,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: NAMESPACE_REGISTRATION @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1225,8 +1235,8 @@
   layout:
   - type: struct_type TransactionType
     value: ACCOUNT_ADDRESS_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1238,8 +1248,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: ACCOUNT_ADDRESS_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1276,8 +1286,8 @@
   layout:
   - type: struct_type TransactionType
     value: ACCOUNT_MOSAIC_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1289,8 +1299,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: ACCOUNT_MOSAIC_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1327,8 +1337,8 @@
   layout:
   - type: struct_type TransactionType
     value: ACCOUNT_OPERATION_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1340,8 +1350,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: ACCOUNT_OPERATION_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1372,8 +1382,8 @@
   layout:
   - type: struct_type TransactionType
     value: MOSAIC_ADDRESS_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1385,8 +1395,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: MOSAIC_ADDRESS_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1451,8 +1461,8 @@
   layout:
   - type: struct_type TransactionType
     value: MOSAIC_GLOBAL_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1464,8 +1474,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: MOSAIC_GLOBAL_RESTRICTION @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction
@@ -1508,8 +1518,8 @@
   layout:
   - type: struct_type TransactionType
     value: TRANSFER @1
-    header: EntityBody
-    version_field: version
+    header: Transaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline Transaction
@@ -1521,8 +1531,8 @@
   layout:
   - type: struct_type TransactionTypeEmbedded
     value: TRANSFER @1
-    header: EntityBody
-    version_field: version
+    header: EmbeddedTransaction
+    version_field: EntityBody.mVersion
     type_field: type
   - comments: ''
     type: inline EmbeddedTransaction

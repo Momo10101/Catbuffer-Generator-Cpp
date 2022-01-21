@@ -67,23 +67,34 @@ class CppSerializationGenerator():
     def reserved_field( self, var_type: str, var_name: str, value: str ):
         member_var = CppFieldGenerator.convert_to_field_name(var_name)
         self.__code_output += f'\tptr = buffer.GetOffsetPtrAndMove( sizeof({var_type}) ); if(!ptr){{ return false; }}\n'
-        self.__code_output += f'\t*( ({var_type}*) ptr ) = {value}; // {var_type} {member_var}\n\n'
 
-        self.__add_ptr_var = True
+        tmp = str(value).split()
+
+	#TODO: document this in readme!
+        if len(tmp) > 1:
+            var_field = CppFieldGenerator.convert_to_field_name(tmp[1])
+            value = f'{var_field}.Size()'
+
+        self.__code_output += f'\t*( ({var_type}*) ptr ) = {value}; // {var_type} {member_var}\n\n'
+        self.__add_ptr_var  = True
 
 
 
     def array_sized_field( self, array_name: str, align: str = "" ):
         array_name = CppFieldGenerator.convert_to_field_name(array_name)
 
-        self.__code_output += f'\n\tfor( const std::unique_ptr<ICatbuffer>& catbuf : {array_name} )\n\t{{\n\t\t'
-        self.__code_output += f'succ = catbuf->Serialize( buffer ); if(!succ){{ return false; }}\n\t\t'
+        self.__code_output += f'\n\tfor( const std::unique_ptr<ICatbuffer>& catbuf : {array_name} )\n\t{{\n'
+        self.__code_output += f'  succ = catbuf->Serialize( buffer ); if(!succ){{ return false; }}\n'
 
         if align:
-            self.__code_output += f'size_t padding = ( {align} - uintptr_t(buffer.GetOffsetPtr())%{align} ) % {align};\n\t\t'
-            self.__code_output += f'for( size_t i=0; i<padding; ++i )\n\t\t{{\n'
-            self.__code_output += f'\t\t\tptr = buffer.GetOffsetPtrAndMove(1); if(!ptr){{ return false; }}\n'
-            self.__code_output += f'\t\t\t*( (uint8_t*) ptr ) = 0;\n\t\t}}\n\t}}\n\n'
+            self.__code_output += f'  size_t padding = ( {align} - uintptr_t(buffer.GetOffsetPtr())%{align} ) % {align};\n'
+            self.__code_output += f'  for( size_t i=0; i<padding; ++i )\n'
+            self.__code_output += f'  {{\n'
+            self.__code_output += f'    ptr = buffer.GetOffsetPtrAndMove(1); if(!ptr){{ return false; }}\n'
+            self.__code_output += f'    *( (uint8_t*) ptr ) = 0;\n'
+            self.__code_output += f'  }}\n'
+            
+        self.__code_output += f' }}\n\n'
 
         self.__add_ptr_var = True
 

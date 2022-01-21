@@ -47,7 +47,8 @@ class CppClassDefinitionGenerator():
 
         self.__class_decl                  = class_decl
         self.__class_name_to_class_decl    = class_name_to_class_decl
- 
+        self.__types                       = types
+
         self.__includes                    = set()
         self.__include_code_output         = ""
 
@@ -91,10 +92,10 @@ class CppClassDefinitionGenerator():
         self.__includes.add( f'#include "{class_name}.h"' )
 
         for field in fields:
-            var_type = field["type"]
-            name     = field["name"]  if "name"  in field else var_type
-            size     = field["size"]  if "size"  in field else ""
-            print    = field["print"] if "print" in field else ""
+            var_type   = field["type"]
+            name       = field["name"]  if "name"  in field else var_type
+            size       = field["size"]  if "size"  in field else ""
+            print_hint = field["print"] if "print" in field else ""
 
 
             if "disposition" in field:
@@ -108,10 +109,14 @@ class CppClassDefinitionGenerator():
                     continue
 
                 elif "array" == disposition:
-                    self.__deserializer.array_field( var_type, name, size )
+                    size_var_type = ""
+                    if size in self.__class_decl.member_vars:
+                        _, size_var_type = self.__class_decl.member_vars[size]
+
+                    self.__deserializer.array_field( var_type, name, size, size_var_type)
                     self.__serializer.array_field( var_type, name )
                     self.__size_generator.array_field( var_type, name )
-                    self.__print_generator.array_field( var_type, name, print )
+                    self.__print_generator.array_field( var_type, name, print_hint )
 
                 elif "inline" == disposition:
                     self.__deserializer.inline_field( name )
@@ -127,12 +132,13 @@ class CppClassDefinitionGenerator():
                     self.__print_generator.reserved_field( var_type, name, reserved_value)
 
                 elif "array_sized" == disposition:
-                    header_type       = field["type"]
-                    header_type_field = field["header_type_field"]
-                    enum_type         = self.__get_var_type( header_type_field, header_type )
-                    align             = field["align"] if "align" in field else ""
+                    header_type          = field["type"]
+                    header_type_field    = field["header_type_field"]
+                    header_version_field = field["header_version_field"]
+                    enum_type            = self.__get_var_type( header_type_field, header_type )
+                    align                = field["align"] if "align" in field else ""
 
-                    self.__deserializer.array_sized_field( name, size, header_type, header_type_field, enum_type, align )
+                    self.__deserializer.array_sized_field( name, size, header_type, header_type_field, header_version_field, enum_type, align )
                     self.__serializer.array_sized_field( name, align )
                     self.__size_generator.array_sized_field( name, size )
                     self.__print_generator.array_sized_field( header_type, name, size )
@@ -145,7 +151,7 @@ class CppClassDefinitionGenerator():
                     self.__size_generator.array_fill_field( var_type, name )
                     self.__print_generator.array_fill_field( var_type, name )
                 else:
-                    print(f'Unknown disposition: { disposition }\n')
+                    print_hint(f'Unknown disposition: { disposition }\n')
                     exit(1)
             else:
 
@@ -153,8 +159,16 @@ class CppClassDefinitionGenerator():
                     condition_name = field["condition"]
                     if condition_name in conditions:
                         condition  = self.__gen_condition_from_field(conditions[condition_name][0])
-                        union_name = "" if len(conditions[condition_name]) == 1 else condition_name+"_union"
 
+			 # if condition variable is defined after condition, then create an enum.
+			 #TODO: create check to ensure that union members are the same size!
+                        idx_cond,  _ = self.__class_decl.member_vars[condition_name]
+                        idx_field, _ = self.__class_decl.member_vars[name]
+
+                        union_name = ""
+                        if idx_cond > idx_field and len(conditions[condition_name]) > 1:
+                                union_name = condition_name+"_union"
+    
                         self.__deserializer.condition_field( name, var_type, condition, union_name )
                         self.__serializer.condition_field( name, var_type, condition, union_name )
                         self.__size_generator.condition( name, var_type, condition, union_name )
@@ -166,7 +180,7 @@ class CppClassDefinitionGenerator():
                     self.__deserializer.normal_field( var_type, name )
                     self.__serializer.normal_field( var_type, name )
                     self.__size_generator.normal_field( var_type, name )
-                    self.__print_generator.normal_field( var_type, name, print )
+                    self.__print_generator.normal_field( var_type, name, print_hint )
 
 
 
@@ -195,6 +209,7 @@ class CppClassDefinitionGenerator():
     def __generate_includes( self ) -> str:
         self.__includes.add( "#include <iostream>" )
         self.__includes.add( "#include <iomanip>"  )
+        self.__includes.add( "#include <limits>"   )
         for include in self.__includes:
             self.__include_code_output += (include + "\n")
 
@@ -211,7 +226,15 @@ class CppClassDefinitionGenerator():
         else:
             print(f'Error: unknown condition operator "{field["condition_operation"]}"')
 
-        return f'{CppFieldGenerator.convert_to_field_name(field["condition"])} {op} {field["condition_value"]}'
+        condition_value = field["condition_value"]
+
+
+        # if condition variable is an enum change to enum value 
+        _, cond_type = self.__class_decl.member_vars[ field["condition"] ]
+        if cond_type in self.__types.name_to_enum:
+            condition_value = f'{cond_type}::{condition_value}'
+
+        return f'{CppFieldGenerator.convert_to_field_name(field["condition"])} {op} {condition_value}'
 
 
 

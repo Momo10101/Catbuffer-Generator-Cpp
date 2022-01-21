@@ -56,7 +56,11 @@ class CppClassDeclarationGenerator():
         self.group_type                                             = ""                      # The enum group that the class belongs to (if any)
         self.group_id                                               = ""                      # The id of the class, within the above group
         self.group_version                                          = ""                      # The version of the group
-                
+        self.group_header                                           = ""
+
+        self.header_version_field                                   = ""
+        self.header_type_field                                      = ""
+
         self.conditions : typing.Dict[str, list]                    = {}                      # Stores a list of condition fields
         self.size_to_arrays : typing.Dict[str, typing.List[str]]    = {}                      # For each variable used as an array size, stores the list of arrays which depend on that variable 
 
@@ -78,7 +82,9 @@ class CppClassDeclarationGenerator():
         if result != YamlFieldCheckResult.OK:
             return result, result_str
 
-        self.__find_array_size_fields()
+        #TODO: Disabled for now due to incompatibility with NEM conditional arrays, enable later on.
+        #      Perhaps add command line option for generating size fields or not.
+        #self.__find_array_size_fields() 
 
         return self.__generate_header()
 
@@ -144,7 +150,9 @@ class CppClassDeclarationGenerator():
         """
         Finds fields that store array sizes and creates the dictionary 
         'array size field' -> list of array names (since a variable can be 
-        used as array size for multiple arrays)
+        used as array size for multiple arrays). This is used for not 
+        creating a size variable, since it is not needed due to C++ vectors 
+        having a size field.
         """
 
         for field in self.fields:
@@ -197,7 +205,6 @@ class CppClassDeclarationGenerator():
             if result != YamlFieldCheckResult.OK:
                 return result, result_str
 
-
             types = field["type"].split()
             
             if len(types) > 1:
@@ -230,6 +237,10 @@ class CppClassDeclarationGenerator():
                     self.group_type    = field_type
                     self.group_id      = field["value"].split()[0]
                     self.group_version = field["value"].split()[1][1:]
+                    self.group_header  = field["header"]
+
+                    self.header_type_field    = field["type_field"]
+                    self.header_version_field = field["version_field"] if "version_field" in field else "" 
 
                     self.__header_code_output += CppFieldGenerator.gen_const_field( field_type, "TRANSACTION_TYPE",    self.group_id,      comments )
                     self.__header_code_output += CppFieldGenerator.gen_const_field( "uint8_t", "TRANSACTION_VERSION", self.group_version, comments )
@@ -299,7 +310,7 @@ class CppClassDeclarationGenerator():
                     #self.__consistency_checks.append(field) # check again later when all classes are declared
 
                     if cond_var in conditions:
-                        self.__header_code_output += CppFieldGenerator.gen_condition_field( cond_var, conditions[cond_var] )
+                        self.__header_code_output += CppFieldGenerator.gen_condition_field( cond_var, conditions[cond_var], self.member_vars )
                         self.__lib_includes.add("#include <vector>")
                         del conditions[cond_var]
                         
@@ -315,8 +326,6 @@ class CppClassDeclarationGenerator():
                     if name in self.member_vars:
                         return YamlFieldCheckResult.NAME_REDEFINED, f"\n\nError: Same field name '{name}' declared multiple times in struct '{self.class_name}'!\n\n"
 
-                    # save as member var
-                    self.member_vars[name] = (idx, field_type)
 
                     # dont generate field if var is the size of an array (in that case the vector 'size()' variable is used instead)
                     if name in self.size_to_arrays:
@@ -324,6 +333,11 @@ class CppClassDeclarationGenerator():
 
                     # generate code
                     self.__header_code_output += CppFieldGenerator.gen_normal_field( field_type, name, size, comments )
+
+
+            # save as member var
+            if "name" in field:
+                self.member_vars[field["name"]] = (idx, field_type)
 
 
             # Add include

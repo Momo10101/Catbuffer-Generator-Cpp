@@ -43,22 +43,30 @@ class CppDeserializationGenerator():
 
 
 
-    def array_field( self, var_type: str, var_name: str, size_var: int ) -> str:
+    def array_field( self, var_type: str, var_name: str, size_var: str, size_type: str ) -> str:
 
-        name     = CppFieldGenerator.convert_to_field_name(var_name)
-        size_var = "tmp" + size_var[:1].upper() + size_var[1:] # name of tmp variable containing size of array
+        name = CppFieldGenerator.convert_to_field_name(var_name)
 
-        self.__code_output += f'\n\t{name}.resize({size_var});'
-        self.__code_output += f'\n\t{name}.shrink_to_fit();'
-        self.__code_output += f'\n\tfor( size_t i=0; i<{size_var}; ++i )\n'
-        self.__code_output += f'\t{{\n'
+        if not str(size_var).isdigit():
+            #TODO: disabled for now due to NEM incompatibility (see also CppClassDeclarationConstructor.init() method) 
+            #size_var = "tmp" + size_var[:1].upper() + size_var[1:] # name of tmp variable containing size of array
+            size_var = CppFieldGenerator.convert_to_field_name(size_var) #TODO: use above line instead when NEM incompatibility has been solved
+
+
+            self.__code_output += f'\n\tif( {size_var} != std::numeric_limits<{size_type}>::max() )\n\t{{'
+        self.__code_output += f'\n\t\t{name}.resize({size_var});'
+        self.__code_output += f'\n\t\t{name}.shrink_to_fit();'
+        self.__code_output += f'\n\t\tfor( size_t i=0; i<{size_var}; ++i )\n'
+        self.__code_output += f'\t\t{{\n'
 
         arr_name_with_idx = var_name+"[i]"
         self.__code_output += "\t"
         self.normal_field(var_type, arr_name_with_idx )
 
-        self.__code_output += f'\t}}\n\n'
+        self.__code_output += f'\t\t}}\n\n'
 
+        if not str(size_var).isdigit():
+            self.__code_output += f'\t}}\n'
 
 
     def inline_field( self, var_name: str ):
@@ -70,17 +78,26 @@ class CppDeserializationGenerator():
         member_name = CppFieldGenerator.convert_to_field_name(name)
 
         self.normal_field(var_type, name, True)
-        self.__code_output += f'\tif( {value} != tmp{member_name[1:]} ){{ return false; }}\n'
+
+        tmp = str(value).split()
+        if len(tmp) > 1:
+            var_field = CppFieldGenerator.convert_to_field_name(tmp[1])
+            value = f'{var_field}.Size()'
+            self.__code_output += f'(void) tmp{member_name[1:]};'
+
+        if len(tmp) == 1:
+            self.__code_output += f'\tif( {value} != tmp{member_name[1:]} ){{ return false; }}\n'
 
 
 
     def array_sized_field( self, array_name:  str, array_size:        str, 
-                                 header_type: str, header_type_field: str, 
+                                 header_type: str, header_type_field: str, header_version_field: str,
                                  enum_type:   str, align:             str = "" ):
 
-        array_name        = CppFieldGenerator.convert_to_field_name( array_name )
-        array_size        = CppFieldGenerator.convert_to_field_name( array_size )
-        header_type_field = CppFieldGenerator.convert_to_field_name( header_type_field )
+        array_name           = CppFieldGenerator.convert_to_field_name( array_name )
+        array_size           = CppFieldGenerator.convert_to_field_name( array_size )
+        header_type_field    = CppFieldGenerator.convert_to_field_name( header_type_field )
+        header_version_field = CppFieldGenerator.convert_to_field_name( header_version_field )
 
         self.__code_output += f'\tfor( size_t read_size = 0; read_size < {array_size}; )\n\t{{\n'
         self.__code_output += "\t\t// Deserialize header\n"
@@ -90,7 +107,7 @@ class CppDeserializationGenerator():
 
         self.__code_output += "\t\t// Get element type and create type\n"
         self.__code_output += f'\t\t{ enum_type } type = header.{ header_type_field };\n'
-        self.__code_output += f'\t\tstd::unique_ptr<ICatbuffer> catbuf = create_type_{ enum_type }( type, header.mEntityBody.mVersion );\n'
+        self.__code_output += f'\t\tstd::unique_ptr<ICatbuffer> catbuf = create_type_{ enum_type }( type, header.{header_version_field} );\n'
         self.__code_output += f'\t\tif( nullptr == catbuf ){{ return false; }}\n\n'
 
         self.__code_output += "\t\t// Deserialize element and save it\n"
@@ -122,7 +139,7 @@ class CppDeserializationGenerator():
 
 
 
-    def condition_field( self, var_name: str, var_type: str, condition: str, union_name: str = "",  ):
+    def condition_field( self, var_name: str, var_type: str, condition: str, union_name: str = "" ):
         name   = var_name
         if union_name:
             var_name = CppFieldGenerator.convert_to_field_name(var_name)

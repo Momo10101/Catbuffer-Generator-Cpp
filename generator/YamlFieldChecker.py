@@ -78,9 +78,19 @@ class YamlFieldChecker():
         if 'value' not in field:
             return YamlFieldCheckResult.VALUE_MISSING, f"\n\nError: 'value' key missing for 'reserved' field in struct '{class_name}'!\n\n"
 
-        value = field['value']
+        value = str(field['value'])
 
-        if not isinstance(value, numbers.Number):
+        tmp = value.split()
+
+        if len(tmp) > 1:
+            if tmp[0] != "sizeof":
+                print(f"\n\nError: Value of 'reserved' field '{value}' unknown") #TODO: just temporary do a YamlFieldCheckResult value and return that instead
+                exit(1) 
+
+            value = "0"
+
+
+        if not value.isdigit():
             return YamlFieldCheckResult.VALUE_NOT_NUMERIC_NOR_ENUM, f"\n\nError: Value of 'reserved' field '{value}' not numeric in struct '{class_name}'!\n\n"
 
         return YamlFieldCheckResult.OK, ""
@@ -139,14 +149,15 @@ class YamlFieldChecker():
         if "size" not in field:
             return YamlFieldCheckResult.ARRAY_SIZE_MISSING, f"\n\nError: Array '{field['name']}' missing 'size' key in struct '{class_name}'!\n\n"
 
-        size_var = field["size"]
+        size_var = str(field["size"])
 
-        if size_var not in member_vars:
+        if size_var not in member_vars and not size_var.isdigit():
             return YamlFieldCheckResult.ARRAY_SIZE_UNKNOWN, f"\n\nError: Array '{field['name']}' size variable '{size_var}' not defined in struct '{class_name}'!\n\n"
 
-        _, size_var_type = member_vars[size_var]
-        if size_var_type not in CppFieldGenerator.builtin_types:
-            return YamlFieldCheckResult.ARRAY_SIZE_VAR_NOT_BUILTIN_TYPE, f"\n\nError: Array '{field['name']}' size variable '{size_var}' type '{size_var_type}' not an integer type in struct '{class_name}'!\n\n"
+        if not size_var.isdigit():
+            _, size_var_type = member_vars[size_var]
+            if size_var_type not in CppFieldGenerator.builtin_types:
+                return YamlFieldCheckResult.ARRAY_SIZE_VAR_NOT_BUILTIN_TYPE, f"\n\nError: Array '{field['name']}' size variable '{size_var}' type '{size_var_type}' not an integer type in struct '{class_name}'!\n\n"
 
         # TODO: move this test to ConsistencyChecker!!
         #idx, _ = member_vars[size_var]

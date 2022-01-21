@@ -55,11 +55,8 @@ class CppFieldGenerator():
 
             ----------------------------
             - comments: ''
-              disposition: const
               name: TRANSACTION_VERSION
-              signedness: unsigned
-              size: 1
-              type: byte #TODO: this should change to 'uint8' and the two fields above removed
+              type: const 'uint8'
               value: 1
             ----------------------------
 
@@ -90,11 +87,8 @@ class CppFieldGenerator():
 
             -------------------------------------------------------------------
             - comments: reserved padding to align next field on 8-byte boundary
-              disposition: reserved
               name: padding
-              signedness: unsigned
-              size: 4
-              type: byte #TODO: this should change to 'uint32' and the two fields above removed
+              type: reserved uint32
               value: 0
             -------------------------------------------------------------------
         
@@ -103,8 +97,6 @@ class CppFieldGenerator():
             ------------------------------------------------------------------------------
         	uint32_t mPadding; //< reserved padding to align next field on 8-byte boundary
             ------------------------------------------------------------------------------
-
-        TODO: Understand the reason for having a reserved field. For now its treated the same as a regular field
         """
 
         return CppFieldGenerator.gen_normal_field( type, name, size, comment )
@@ -180,11 +172,9 @@ class CppFieldGenerator():
 
             --------------------------------
             - comments: sub-transaction data 
-              disposition: array sized
               name: transactions
               size: payload_size
-              type: EmbeddedTransaction
-              header: EmbeddedTransaction
+              type: array_sized EmbeddedTransaction
               header_type_field: type
             --------------------------------
 
@@ -223,13 +213,13 @@ class CppFieldGenerator():
 
     # TODO: Should ideally disappear by changing the schemas
     @staticmethod
-    def gen_condition_field( name: str, fields: dict ):
+    def gen_condition_field( name: str, fields: dict, member_vars ):
         """
         TODO: DOCUMENT!!!
         """
 
         output = ""
-        if len(fields) > 1:
+        if len(fields) > 1 and name not in member_vars:
             output += f'\tunion\n\t{{\n'
 
         for field in fields:
@@ -240,7 +230,7 @@ class CppFieldGenerator():
                 
             output += '\n'
 
-        if len(fields) > 1:
+        if len(fields) > 1 and name not in member_vars:
             output += f'\t}} {CppFieldGenerator.convert_to_field_name(name)}_union;\n\n'
 
         return output

@@ -57,7 +57,7 @@ int main( int argc, char* argv[] )
 
     if(!succ)
     {
-      printf("Error: Was not able to deserialize data!\n");
+      printf("Error: Was not able to deserialize data!:\n%s\n", payloads[i].c_str());
       return 1;
     }
 

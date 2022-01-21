@@ -88,6 +88,12 @@ class CppPrintOutputGenerator():
 
 
     def reserved_field( self, var_type: str, var_name: str, var_value: str ):
+
+        tmp = str(var_value).split()
+        if len(tmp) > 1:
+            var_field = CppFieldGenerator.convert_to_field_name(tmp[1])
+            var_value = f'{var_field}.Size()'
+
         self.__code_output += f'\tstd::cout << tabs << "\\t{var_type} {var_name}: " << {var_value} << " (" << sizeof({var_type}) <<" bytes)\\n";\n'
 
 

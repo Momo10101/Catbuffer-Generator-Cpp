@@ -3,6 +3,7 @@ import string
 
 from .CppClassDeclarationGenerator import CppClassDeclarationGenerator
 from .CppTypesGenerator import CppTypesGenerator
+from .CppFieldGenerator import CppFieldGenerator
 
 
 
@@ -98,7 +99,7 @@ class CppConvertersGenerator():
 
         if generate_print_methods:
             self.__generate_string_to_class_method( class_declarations )
-            self.__generate_rawbuffer_to_class_methods()
+            self.__generate_rawbuffer_to_class_methods( class_declarations )
             self.__generate_enum_group_to_class_methods()
 
         self.__generate_includes()
@@ -219,7 +220,7 @@ class CppConvertersGenerator():
             self.__definition_code_output += f'\texit(1);\n\n}}\n\n'
 
 
-    def __generate_rawbuffer_to_class_methods( self ):
+    def __generate_rawbuffer_to_class_methods( self, class_decls ):
         group_names = []
 
         for enum_class, versions_to_enum_to_classes in self.type_to_versions_to_enum_to_classes.items():
@@ -230,11 +231,10 @@ class CppConvertersGenerator():
 
         for group_name in group_names:
 
-            # TODO: this is hardcoded, change once new parser is done and supports headers
-            if group_name == "TransactionType":
-                header_class = "Transaction"
-            elif group_name == "TransactionTypeEmbedded":
-                header_class = "EmbeddedTransaction"
+            class_name    = list(self.type_to_versions_to_enum_to_classes[group_name]["1"].values())[0]
+            header_class  = class_decls[class_name].group_header
+            version_field = class_decls[class_name].header_version_field
+            version_field = "header."+CppFieldGenerator.convert_to_field_name(version_field) if version_field else "1"
 
             self.__definition_code_output += f'std::unique_ptr<ICatbuffer> create_type_{group_name}( RawBuffer& inputBuf )\n'
             self.__definition_code_output += f'{{\n'
@@ -252,10 +252,10 @@ class CppConvertersGenerator():
             self.__definition_code_output += f'\n'
             self.__definition_code_output += f'  // Deserialize all of payload\n'
             self.__definition_code_output += f'  printf( "\\nDetected buffer of type 0x%X (%d) \\n\\n", (uint32_t) header.mType, (uint32_t) header.mType );\n'
-            self.__definition_code_output += f'  std::unique_ptr<ICatbuffer> cat = create_type_{group_name}( header.mType, header.mEntityBody.mVersion );\n'
+            self.__definition_code_output += f'  std::unique_ptr<ICatbuffer> cat = create_type_{group_name}( header.mType, {version_field} );\n'
             self.__definition_code_output += f'  if( nullptr == cat )\n'
             self.__definition_code_output += f'  {{\n'
-            self.__definition_code_output += f'    printf( "Error: Combination of type=%u and version=%u do not correspond to any buffer!\\n", (uint32_t) header.mType, header.mEntityBody.mVersion );\n'
+            self.__definition_code_output += f'    printf( "Error: Combination of type=%u and version=%u do not correspond to any buffer!\\n", (uint32_t) header.mType, {version_field} );\n'
             self.__definition_code_output += f'    return nullptr;\n'
             self.__definition_code_output += f'  }}\n'
             self.__definition_code_output += f'  succ = cat->Deserialize( inputBuf );\n'
