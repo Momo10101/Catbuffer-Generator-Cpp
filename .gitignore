@@ -1,0 +1,6 @@
+*.pch
+*.pyc
+__pycache__/
+.vscode/
+.python-version
+_build/

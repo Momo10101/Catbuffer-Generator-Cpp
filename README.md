@@ -36,7 +36,7 @@ A simple C++ code generator for serializing and deserializing Catbuffer schemas.
 # Overview
 
 Catbuffer is a very simple and memory efficient data serialization format. No extra information or padding is read or written, apart from what is defined by the user.
-Catbuffer is the serialization mechanism originally developed for the Symbol blockchain to serialize and deserialize data structures for sending and receiving data between network clients. It consist of three components. The **catbuffer-schema**, which is the interface description language used to define the data structures; The **catbuffer-parser** which parses the schemas and generates a .yaml output file; The **catbuffer-generator** which takes the generated .yaml file as input and generates C++ files which are compiled into a library. The process is shown below: 
+Catbuffer is the serialization mechanism originally developed for the Symbol blockchain to serialize and deserialize data structures for sending and receiving data between network clients. It consist of three components. The **catbuffer-schema**, which is the interface description language (IDL) used to define the data structures; The **catbuffer-parser** which parses the schemas and generates a .yaml output file; The **catbuffer-generator** which takes the generated .yaml file as input and generates C++ files which are compiled into a library. The process is shown below: 
 
 **catbuffer-schema** --> **catbuffer-parser** --> .yaml file --> **catbuffer-generator** --> .cpp/.h files --> C++ lib file
 
@@ -60,7 +60,7 @@ The generated code will allow serialization and manipulation of the above data s
   a.Deserialize( dataA );  // 'Deserialize()' initializes 'Coordinate' members from a raw buffer
 
   // Read vector 'b' (deserialize from file)
-  RawBuffer rawB = read_file( "vector_b.raw" );
+  RawBuffer dataB = read_file( "vector_b.raw" );
   Coordinate b;
   b.Deserialize( dataB );
 
@@ -100,7 +100,7 @@ python3 -m generator input_file.yaml output_directory/
 cd output_directory
 ```
 
-4. Create a director to build library:
+4. Create a directory to build library:
 
 ```bash
 mkdir _build && cd _build
@@ -143,15 +143,15 @@ python3 -m unittest -v unit_tests/TestYamlDependencyErrorDetection.py
 To test the correct deserializtion/serialization of the generated code, some yaml input tests are included in the folder **yaml_test_inputs**. To run these test run the the following commands while at the base folder:
 
 ```bash
-mkdir output
+mkdir output-symbol
 python3 -m generator yaml_test_inputs/symbol-all-transactions.yaml output-symbol
 
-cd output
+cd output-symbol
 mkdir _build && cd _build
 cmake ..
 make
 
-cd ../end-to-end-tests
+cd ../../end-to-end-tests
 mkdir _build && cd _build
 cmake ..
 make
@@ -215,11 +215,11 @@ The above markup defines a structure called **Coordinate** with 3 fields called 
 
 Catbuffer supports the following builtin datatypes: 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'
 
-TODO: we should add support for float and double as well
+[//]: # (TODO: we should add support for float and double as well)
 
-## Custom Data Types
+## Alias Data Types
 
-Apart from the builtin types, custom types can be defined like so:
+Apart from the builtin types, alias types can be defined like so:
 
 ```yaml
 - name: FeeMultiplier
@@ -287,7 +287,7 @@ Structs are the most elaborate custom defined types in Catbuffer and can contain
 
 *builtin type*
 
-*custom type*
+*alias type*
 
 
 
@@ -326,7 +326,7 @@ Builtin types are the simplest types supported in Catbuffer:
 
 ### Custom Type Field
 
-Some custom types such as **NetworkType**, **FeeMultiplier**, **Coordinate** were defined [here](#defining-enumeration), [here](#custom-data-types) and [here](#yaml-input-file-format). Below they are shown as fields in a struct:
+Some custom types such as **NetworkType**, **FeeMultiplier**, **Coordinate** were defined [here](#defining-enumeration), [here](#alias-data-types) and [here](#yaml-input-file-format). Below they are shown as fields in a struct:
 
 ```yaml
 - name: network
@@ -352,24 +352,23 @@ Condition fields can be used to add optional fields. If a condition is met then 
 ```yaml
 - name: msg
   type: Message
-  condition: message_defined
+  condition: message_included
   condition_operation: not equals
   condition_value: 0
 ```
 
-The name of the field is 'msg' and is of custom type 'Message'. It is only serialized/deserialized if **message_defined != 0**. Note that **message_defined** has to be a field in the same struct. The only condition operations supported at the moment are **equals** and **not equals**.
+The name of the field is 'msg' and is of alias type 'Message'. It is only serialized/deserialized if **message_included != 0**. Note that **message_included** has to be a field in the same struct, defined before 'msg'. The only condition operations supported at the moment are **equals** and **not equals**.
 
-#TODO: add support for other condition operators and perhaps change names to '=', '!=', '<=', '=>' etc.
+[//]: # (#TODO: add support for other condition operators and perhaps change names to '=', '!=', '<=', '=>' etc.)
 
 ### Reserved Field
 
-Reserved fields are useful for when a field is reserved for future use and should have a specific value that can not be set by the user. It is also useful for adding padding. Reserved fields are defined like [builtin](#builtin-type-field) fields but also need to add a **value** key and a **disposition** key with the value **reserved**. Below is an example of how to define a reserved field for padding:
+Reserved fields are useful for when a field is reserved for future use and should have a specific value that can not be set by the user. It is also useful for adding padding. Reserved fields are defined like [builtin](#builtin-type-field) fields but with the keyword **reserved** added to the type field and a value field. Below is an example of how to define a reserved field for padding:
 
 ```yaml
   - name: padding
-    type: uint32
+    type: reserved uint32
     value: 0
-    disposition: reserved
     comments: reserved padding to align next field on 8-byte boundary
 ```
 
@@ -381,10 +380,8 @@ Note that when serializing/deserializing, if the value read for a reserved field
 Inline fields can be used to inline structs into other structs, so that instead of doing *OuterStruct.InnerStruct.my_variable*, one can do *OuterStruct.my_variable*. An example of how to do an inline field is shown below
 
 ```yaml
-  - type: Coordinate
-    disposition: inline
+  - type: inline Coordinate
 ```
-
 
 
 ### Const Field
@@ -413,16 +410,14 @@ An array field is just a normal fixed size array with elements of a fixed size.
     type: array uint64
 ```
 
-Note that **amount_size** has to be a field in the same struct which appears before the array field. Furthermore, note that **type** can also be a user defined type, but the size of each array element must be the same for all elements, which means that they can not contain arrays of different sizes for example (TODO: ask the core devs about this). Finally note that if the same size field is used for multiple arrays, that the arrays have to be of equal size when serializing/deserializing (TODO: add check and unit test).
+Note that **amount_size** has to be a field in the same struct which appears before the array field. Furthermore, note that **type** can also be a struct defined type, but the size of each array element must be the same for all elements, which means that they can not contain arrays of different sizes for example. Finally note that if the same size field is used for multiple arrays, the arrays have to be of equal size when serializing/deserializing 
 
-
-(TODO: missing check)
-
-(TODO: can size be int instead of variable?)
+[//]: # (TODO: add check and unit test)
+[//]: # (TODO: add support for int instead of variable)
 
 ### Array Sized Field
 
-An **array_sized** field is an array where the number of elements is not known, but where the total array size in bytes is known. This is useful for arrays where each element is of a different type and size. The array elements in this case are of user defined custom types, however, all elements must share a common header field, which in turn contains a field which indicates what the element type is. The header type is indicated with the **header** key and the field within the header, containing the element type, is indicated with the **header_type_field** key. An example of this is shown below:
+An **array_sized** field is an array where the number of elements is not known, but where the total array size in bytes is known. This is useful for arrays where each element is of a different type and size. The array elements in this case are of user defined custom types, however, all elements must share a common header field, which in turn contains a field which indicates what the element type is. The header type is indicated with the **header** key and the field within the header containing the element type, is indicated with the **header_type_field** key. An example of this is shown below:
 
 ```yaml
   - name: transactions
@@ -447,13 +442,9 @@ Given an **array_sized** field, Catbuffer will automagically know how to seriali
 **MOSAIC_DEFINITION** is an enumerator in the **TransactionType** enum, which also has to be the type of the **elem_type** field mentioned above. This enum gives the type of the struct within the group **TransactionType**. The **@3** part indicates the version of the struct. This way Catbuffer can support evolving structures over time.
 
 
-( TODO: header, version_field and type_field should not be defined here since its the same for all structs of type TransactionType )
-
-
-( TODO: what should happen if a version and type combination does not exist? )
-
-
-( TODO: We need to think about this a bit more. What if there are two fields of type EmbeddedTransaction? What if its not inline? )
+[//]: #( TODO: header, version_field and type_field should not be defined here since its the same for all structs of type TransactionType )
+[//]: #( TODO: what should happen if a version and type combination does not exist? )
+[//]: #( TODO: We need to think about this a bit more. What if there are two fields of type EmbeddedTransaction? What if its not inline? )
 
 
 
@@ -468,11 +459,7 @@ An 'array fill' is a normal array with fixed sized elements, but where the numbe
 
 Note that an 'array fill' field has to be the last field in the outermost struct, otherwise it is an error.
 
-
-(TODO: implement check)
-
-
-(TODO: Explain why the need for array fill. Is it because we can save a size field?)
+[//]: #(TODO: implement check)
 
 
 # Generator code
@@ -484,7 +471,7 @@ The generator code, defined in the **generator/** folder, contains multiple clas
 |------------------------------|-------------------------------------------------------------------------------------------------|
 |CppClassMemberGenerator       | Takes fields defined in YAML and converts them to C++ class members.                            |
 |CppClassDeclarationGenerator  | Generates C++ class declarations which go into **.h** files.                                    |
-|CppTypesGenerator             | Converts enums and custom types defined in YAML and outputs them in **types.h**.                |
+|CppTypesGenerator             | Converts enums and alias types defined in YAML and outputs them in **types.h**.                 |
 
 
 |Definition Classes            | Description                                                                                     |
